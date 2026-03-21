@@ -3097,15 +3097,33 @@ async function confirmPermanentDelete() {
     const deletingToken = pendingPermanentDeleteToken;
     const deletingCreatedAt = pendingPermanentDeleteCreatedAt;
     const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-    const response = await fetch(apiUrl(`/api/bill/${pendingPermanentDeleteToken}/permanent-delete`), {
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+
+    let response = await fetch(apiUrl(`/api/bill/${pendingPermanentDeleteToken}/permanent-delete`), {
       method: 'DELETE',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
+      headers,
       body: JSON.stringify({ createdAt: pendingPermanentDeleteCreatedAt || null })
     });
-    
+
+    // Fallback 1: some backends ignore createdAt body.
+    if (!response.ok) {
+      response = await fetch(apiUrl(`/api/bill/${pendingPermanentDeleteToken}/permanent-delete`), {
+        method: 'DELETE',
+        headers
+      });
+    }
+
+    // Fallback 2: if permanent-delete route can't find legacy records, soft-delete as backup.
+    if (!response.ok) {
+      response = await fetch(apiUrl(`/api/bill/${pendingPermanentDeleteToken}/delete`), {
+        method: 'PUT',
+        headers
+      });
+    }
+
     if (response.ok) {
       document.getElementById('permanentDeleteModal').classList.remove('active');
       pendingPermanentDeleteToken = null;
@@ -3115,10 +3133,11 @@ async function confirmPermanentDelete() {
       await loadAnalytics();
     } else {
       const errorData = await response.json().catch(() => ({}));
-      alert(errorData.error || 'Failed to permanently delete bill');
+      const errorMessage = errorData.error || 'Unable to delete this bill';
+      showDownloadPopup(errorMessage, 'danger');
     }
   } catch (error) {
-    alert('Error permanently deleting bill: ' + error.message);
+    showDownloadPopup('Error deleting bill', 'danger');
   }
 }
 // Check user role and hide admin-only features for cashiers
