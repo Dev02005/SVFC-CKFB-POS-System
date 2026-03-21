@@ -128,20 +128,66 @@ initialize_default_users()
 
 # ============ DATA RETENTION & CLEANUP ============
 
+def normalize_bill_datetime(raw_value):
+    """Convert a bill date value (datetime or string) into a naive UTC datetime."""
+    if not raw_value:
+        return None
+
+    if isinstance(raw_value, datetime):
+        if raw_value.tzinfo is not None:
+            return raw_value.astimezone(timezone.utc).replace(tzinfo=None)
+        return raw_value
+
+    if isinstance(raw_value, str):
+        text = raw_value.strip()
+        if not text:
+            return None
+
+        # Handle ISO strings ending with Z.
+        normalized = text.replace("Z", "+00:00") if text.endswith("Z") else text
+        try:
+            parsed = datetime.fromisoformat(normalized)
+            if parsed.tzinfo is not None:
+                return parsed.astimezone(timezone.utc).replace(tzinfo=None)
+            return parsed
+        except ValueError:
+            pass
+
+        # Fallback formats used by legacy rows.
+        for fmt in ("%d/%m/%Y %I:%M:%S %p", "%d/%m/%Y %H:%M:%S", "%Y-%m-%d"):
+            try:
+                return datetime.strptime(text, fmt)
+            except ValueError:
+                continue
+
+    return None
+
 def cleanup_old_bills():
     """Delete bills older than 6 months automatically"""
     try:
-        # Calculate cutoff date (6 months ago)
-        cutoff_date = datetime.now() - timedelta(days=180)
-        
-        # Find and delete bills older than 6 months
-        result = bills_col.delete_many({
-            "createdAt": {"$lt": cutoff_date}
-        })
-        
-        if result.deleted_count > 0:
-            logger.info(f"🗑️ Cleanup: Deleted {result.deleted_count} bills older than 6 months (before {cutoff_date.date()})")
-        
+        # Calculate cutoff date (strictly 6 months ~= 180 days)
+        cutoff_date = datetime.utcnow() - timedelta(days=180)
+
+        old_bill_ids = []
+        cursor = bills_col.find({}, {"_id": 1, "createdAt": 1, "createdAtISO": 1, "date": 1})
+        for bill in cursor:
+            bill_dt = (
+                normalize_bill_datetime(bill.get("createdAt"))
+                or normalize_bill_datetime(bill.get("createdAtISO"))
+                or normalize_bill_datetime(bill.get("date"))
+            )
+
+            if bill_dt and bill_dt < cutoff_date:
+                old_bill_ids.append(bill["_id"])
+
+        if not old_bill_ids:
+            return 0
+
+        result = bills_col.delete_many({"_id": {"$in": old_bill_ids}})
+        logger.info(
+            f"🗑️ Cleanup: Deleted {result.deleted_count} bills older than 6 months "
+            f"(before {cutoff_date.date()})"
+        )
         return result.deleted_count
     
     except Exception as e:
@@ -149,26 +195,9 @@ def cleanup_old_bills():
         return 0
 
 def check_and_cleanup():
-    """Check if we're in a new month and cleanup old data"""
+    """Always enforce 6-month retention for bills."""
     try:
-        # Get the latest bill to check if we need cleanup
-        latest_bill = bills_col.find_one(
-            {},
-            sort=[("createdAt", -1)]
-        )
-        
-        if latest_bill and "createdAt" in latest_bill:
-            oldest_bill = bills_col.find_one(
-                {},
-                sort=[("createdAt", 1)]
-            )
-            
-            if oldest_bill and "createdAt" in oldest_bill:
-                months_diff = (latest_bill["createdAt"] - oldest_bill["createdAt"]).days / 30
-                
-                # If we have 7+ months of data, cleanup the oldest month
-                if months_diff >= 7:
-                    cleanup_old_bills()
+        cleanup_old_bills()
     
     except Exception as e:
         logger.warning(f"Could not perform automatic cleanup check: {str(e)}")
