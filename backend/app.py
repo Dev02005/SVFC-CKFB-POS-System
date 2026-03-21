@@ -14,6 +14,7 @@ import os
 import logging
 import bcrypt
 import re
+from uuid import uuid4
 
 # Configure logging FIRST (before MongoDB)
 logging.basicConfig(
@@ -161,6 +162,21 @@ def normalize_bill_datetime(raw_value):
                 continue
 
     return None
+
+
+def generate_unique_bill_no(now_utc):
+    """Create a DB-only globally unique bill identifier."""
+    return f"UBN-{now_utc.strftime('%Y%m%d%H%M%S%f')}-{uuid4().hex[:8].upper()}"
+
+
+def sanitize_bill_for_client(bill):
+    """Remove internal-only fields before sending bill data to clients."""
+    if not isinstance(bill, dict):
+        return bill
+
+    sanitized = dict(bill)
+    sanitized.pop("uniqueBillNo", None)
+    return sanitized
 
 def cleanup_old_bills():
     """Delete bills older than 6 months automatically"""
@@ -528,6 +544,7 @@ def save_bill():
             "payment": data.get("payment", "Unknown").strip(),
             "orderType": data.get("orderType", "Unknown").strip(),
             "token": int(data.get("token", 0)),
+            "uniqueBillNo": generate_unique_bill_no(now_utc),
             "createdAt": now_utc,
             "createdAtISO": now_utc.isoformat()
         }
@@ -596,6 +613,8 @@ def get_bills():
             if isinstance(bill.get('createdAtISO'), str):
                 # Already a string, keep it
                 pass
+
+        bills = [sanitize_bill_for_client(bill) for bill in bills]
         
         logger.debug(f"Fetching bills: Found {len(bills)} bills")
         return jsonify(bills), 200
@@ -622,7 +641,7 @@ def get_bill(token):
         
         return jsonify({
             "success": True,
-            "bill": bill
+            "bill": sanitize_bill_for_client(bill)
         }), 200
     
     except ValueError:
