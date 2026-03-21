@@ -1,0 +1,3161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="Sri Vengamamba Food Court Chinese Kitchen POS System - Professional point of sale billing software for restaurants, food courts, and cloud kitchens. Features thermal printing, payment tracking (Cash/Card/UPI), delivery platform integration (Zomato/Swiggy), and custom item billing. Located at ANITS College, Visakhapatnam.">
+<meta name="keywords" content="POS system, restaurant billing, food court POS, Chinese kitchen, ANITS College, point of sale, billing software, thermal printer, restaurant management, Zomato orders, Swiggy orders, cloud kitchen POS, food billing system, Visakhapatnam restaurants">
+<meta name="author" content="CSE 88 DEV">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#ffd54f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sri Vengamamba POS">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Sri Vengamamba Food Court - Chinese Kitchen POS System">
+<meta property="og:description" content="Professional POS billing system for restaurants with thermal printing, payment tracking, and delivery platform integration">
+<meta property="og:site_name" content="Sri Vengamamba Food Court">
+<meta property="og:locale" content="en_IN">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Sri Vengamamba Food Court - Chinese Kitchen POS">
+<meta name="twitter:description" content="Professional restaurant POS system with thermal printing and delivery integration">
+
+<!-- Canonical URL -->
+<link rel="canonical" href="https://www.srivengamambafoodcourt.com/">
+
+<title>SVFC-CK/FB Billing Portal</title>
+
+<style>
+:root{
+--bg:#0a0a0a;
+--panel:#1a1a1a;
+--gold:#ffd54f;
+--gold-dark:#ffb300;
+--red:#d32f2f;
+--card-bg:#2a2a2a;
+--hover-glow:rgba(255, 213, 79, 0.15);
+}
+
+/* ===== GLOBAL ===== */
+*{box-sizing:border-box;}
+html, body{
+margin:0;
+padding:0;
+min-height:100%;
+font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+background:linear-gradient(135deg, var(--bg) 0%, #1a1a1a 100%);
+color:var(--gold);
+}
+
+@media screen and (min-width: 1200px){
+body{zoom:1.08;}
+}
+
+/* ===== HEADER ===== */
+.header{
+flex-shrink:0;
+text-align:center;
+padding:16px 20px 12px;
+background:linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+border-bottom:3px solid var(--gold-dark);
+box-shadow:0 4px 20px rgba(0,0,0,0.5);
+position:relative;
+min-height:90px;
+}
+
+.header h1{
+margin:0;
+font-size:clamp(18px, 3.5vw, 32px);
+color:var(--gold);
+text-shadow:2px 2px 8px rgba(255, 213, 79, 0.3);
+letter-spacing:clamp(0.5px, 0.15vw, 1px);
+padding:0 140px;
+line-height:1.2;
+}
+
+.header h3{
+margin:6px 0 0;
+color:#bbb;
+font-weight:400;
+font-size:clamp(12px, 1.9vw, 15px);
+padding:0 140px;
+line-height:1.3;
+}
+
+.billing-portal-text{
+display:block;
+margin-top:2px;
+color:#888;
+font-style:italic;
+font-size:12px;
+font-weight:400;
+}
+
+@media (max-width: 900px){
+.header h1{
+padding:0 110px;
+font-size:clamp(16px, 4vw, 28px);
+}
+.header h3{
+padding:0 110px;
+}
+}
+
+@media (max-width: 600px){
+.header{
+padding:12px 10px 10px;
+min-height:80px;
+}
+.header h1{
+padding:0 85px;
+}
+.header h3{
+padding:0 85px;
+margin:4px 0 0;
+}
+}
+
+.header-info{
+display: flex;
+justify-content: space-between;
+align-items: center;
+flex-wrap: wrap;
+max-width: 800px;
+margin: 6px auto 0;
+padding: 0 20px;
+gap: 12px;
+width: 100%;
+}
+
+.location, .owner{
+color: #999;
+font-size: clamp(11px, 1.5vw, 13px);
+min-width: 120px;
+}
+
+.location strong, .owner strong{
+color:var(--gold);
+font-weight:600;
+}
+
+.header-top-row{
+width:100%;
+display:flex;
+justify-content:space-between;
+align-items:center;
+flex-wrap:nowrap;
+gap:8px;
+padding:0 16px;
+margin-top:10px;
+}
+
+.header-icons{
+display:flex;
+gap:10px;
+align-items:center;
+flex-wrap:nowrap;
+position:static;
+justify-content:flex-start;
+flex:0 0 auto;
+min-width:auto;
+}
+
+.analytics-btn-wrapper{
+display:flex;
+align-items:center;
+position:static;
+justify-content:flex-end;
+gap:10px;
+flex:0 0 auto;
+min-width:auto;
+margin-left:auto;
+}
+
+@media (max-width: 900px){
+.header-icons{
+gap:5px;
+}
+.analytics-btn-wrapper{
+gap:5px;
+}
+.header-top-row{
+padding:0 12px;
+gap:6px;
+}
+}
+
+@media (max-width: 768px){
+.header-top-row{
+padding:0 10px;
+gap:8px;
+}
+.header-icons,
+.analytics-btn-wrapper{
+min-width: auto;
+}
+.header-icon-btn{
+padding:8px 12px !important;
+font-size:clamp(11px, 2vw, 13px) !important;
+min-width:75px !important;
+}
+.user-name{
+font-size:clamp(10px, 1.8vw, 12px) !important;
+margin-right:2px !important;
+display:none;
+}
+}
+
+@media (max-width: 600px){
+.header-top-row{
+padding:0 8px;
+gap:8px;
+}
+.header-icons{
+gap:6px;
+}
+.analytics-btn-wrapper{
+justify-content:flex-end;
+}
+.header-icon-btn{
+padding:6px 10px !important;
+font-size:11px !important;
+min-width:60px !important;
+}
+.user-name{
+display:none !important;
+}
+}
+
+.user-info{
+display:flex;
+align-items:center;
+gap:4px;
+flex-wrap:wrap;
+}
+
+.header-icon-btn{
+background:linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%);
+color:#000;
+border:none;
+border-radius:8px;
+width:auto;
+height:auto;
+cursor:pointer;
+font-size:clamp(12px, 1.5vw, 15px);
+font-weight:600;
+display:flex;
+align-items:center;
+justify-content:center;
+transition:all 0.3s ease;
+box-shadow:0 3px 10px rgba(255, 213, 79, 0.3);
+-webkit-tap-highlight-color:transparent;
+user-select:none;
+padding:9px 15px;
+min-width:90px;
+}
+
+@media (max-width: 900px){
+.header-icon-btn{
+padding:8px 13px;
+min-width:80px;
+font-size:12px;
+}
+}
+
+.header-icon-btn:hover{
+transform:translateY(-2px);
+box-shadow:0 6px 16px rgba(255, 213, 79, 0.5);
+}
+
+.header-icon-btn:active{
+transform:scale(0.95);
+}
+
+.settings-container{
+position:relative;
+}
+
+.settings-btn{
+background:linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%) !important;
+color:#000 !important;
+font-weight:700 !important;
+border:1px solid rgba(255, 213, 79, 0.9);
+border-radius:12px;
+box-shadow:
+0 8px 20px rgba(255, 179, 0, 0.35),
+inset 0 1px 0 rgba(255,255,255,0.55);
+}
+
+.settings-btn:hover{
+transform:translateY(-2px);
+box-shadow:
+0 12px 26px rgba(255, 179, 0, 0.5),
+0 0 0 1px rgba(255, 213, 79, 0.35);
+}
+
+.settings-dropdown{
+display:none;
+position:absolute;
+top:52px;
+left:0;
+min-width:215px;
+background:linear-gradient(180deg, rgba(34, 34, 34, 0.98) 0%, rgba(16, 16, 16, 0.98) 100%);
+border:2px solid var(--gold-dark);
+border-radius:10px;
+box-shadow:0 14px 30px rgba(0,0,0,0.52);
+z-index:1000;
+padding:0;
+overflow:hidden;
+}
+
+@media (max-width: 600px){
+.settings-dropdown{
+left:auto;
+right:0;
+min-width:190px;
+}
+}
+
+.settings-header-label{
+padding:13px 16px;
+text-align:center;
+font-size:17px;
+font-weight:700;
+color:var(--gold);
+border-bottom:1px solid rgba(255, 179, 0, 0.45);
+}
+
+.dropdown-menu-btn{
+width:100%;
+background:transparent;
+color:#f6f1dc;
+border:none;
+border-bottom:1px solid rgba(255, 179, 0, 0.25);
+text-align:left;
+padding:14px 16px;
+font-size:15px;
+font-weight:500;
+cursor:pointer;
+transition:background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
+}
+
+.dropdown-menu-btn.edit-menu-toggle{
+display:flex;
+align-items:center;
+justify-content:space-between;
+}
+
+.dropdown-menu-btn.edit-menu-toggle .chevron{
+font-size:13px;
+transition:transform 0.2s ease;
+}
+
+.dropdown-menu-btn.edit-menu-toggle.expanded .chevron{
+transform:rotate(180deg);
+}
+
+.edit-menu-submenu{
+display:none;
+background:rgba(255, 179, 0, 0.04);
+}
+
+.edit-menu-submenu.active{
+display:block;
+}
+
+.edit-menu-submenu .dropdown-menu-btn{
+padding-left:18px;
+font-size:14px;
+}
+
+.dropdown-menu-btn:hover{
+background:rgba(255, 179, 0, 0.14);
+color:#ffe6a3;
+padding-left:20px;
+}
+
+.edit-menu-submenu .dropdown-menu-btn:hover{
+padding-left:22px;
+}
+
+.dropdown-menu-btn:last-child{
+border-bottom:none;
+}
+
+.settings-divider{
+margin:0;
+border:none;
+border-top:1px solid rgba(255, 179, 0, 0.4);
+}
+
+.dropdown-menu-btn.logout-btn{
+color:#ffffff;
+}
+
+@media (max-width: 768px){
+.settings-header-label{
+font-size:16px;
+}
+.dropdown-menu-btn{
+font-size:14px;
+padding:12px 14px;
+}
+.analytics-btn-wrapper{
+justify-content:flex-end;
+}
+}
+
+.header-info{
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+flex-wrap:wrap;
+max-width:1000px;
+margin:10px auto 0;
+padding:0 16px;
+gap:10px;
+width:100%;
+}
+
+.location,
+.owner{
+color:#b9b9b9;
+font-size:clamp(12px, 1.55vw, 14px);
+line-height:1.35;
+max-width:48%;
+}
+
+.location strong,
+.owner strong{
+color:var(--gold);
+font-weight:700;
+}
+
+.owner{
+text-align:right;
+margin-left:auto;
+}
+
+@media (max-width: 600px){
+.header-info{
+gap:6px;
+margin-top:8px;
+justify-content:center;
+align-items:center;
+}
+.location,
+.owner{
+max-width:100%;
+text-align:center;
+font-size:12px;
+}
+.owner{
+margin-left:0;
+}
+}
+
+/* ===== LAYOUT ===== */
+body{display:flex;flex-direction:column;min-height:100vh;}
+.container{
+display:flex;
+flex:1;
+min-height:0;
+gap:8px;
+padding:8px;
+overflow:hidden;
+}
+
+@media (max-width: 768px){
+.container{
+gap:6px;
+padding:6px;
+}
+}
+
+@media (max-width: 600px){
+.container{
+flex-direction:column;
+gap:4px;
+padding:4px;
+}
+}
+
+/* ===== PAGE FOOTER ===== */
+.page-footer{
+flex-shrink:0;
+text-align:center;
+font-size:11px;
+color:#999;
+border-top:2px solid rgba(255, 213, 79, 0.2);
+padding:10px;
+background:linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
+margin-top:auto;
+}
+
+.page-footer b{
+color:var(--gold);
+font-weight:700;
+}
+
+/* ===== LEFT ===== */
+.left{
+width:65%;
+min-width:0;
+min-height:0;
+background:var(--panel);
+border-radius:16px;
+display:flex;
+flex-direction:column;
+box-shadow:0 8px 32px rgba(0,0,0,0.4);
+border:1px solid rgba(255, 213, 79, 0.1);
+overflow:hidden;
+}
+
+@media (max-width: 768px){
+.left{
+width:60%;
+}
+}
+
+@media (max-width: 600px){
+.left{
+width:100%;
+height:auto;
+max-height:60vh;
+border-radius:12px;
+}
+}
+
+.add-to-menu-btn{
+width:100%;
+padding:14px;
+background:linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+color:#fff;
+border:none;
+border-radius:8px;
+font-size:15px;
+font-weight:bold;
+cursor:pointer;
+box-shadow:0 4px 12px rgba(76, 175, 80, 0.4);
+transition:all 0.3s ease;
+margin-bottom:12px;
+}
+
+.add-to-menu-btn:hover{
+transform:translateY(-2px);
+box-shadow:0 6px 16px rgba(76, 175, 80, 0.6);
+}
+
+.add-to-menu-btn:active{
+transform:scale(0.98);
+}
+
+.tabs{
+flex-shrink:0;
+display:flex;
+gap:10px;
+padding:16px;
+background:rgba(0,0,0,0.3);
+border-radius:16px 16px 0 0;
+flex-wrap:wrap;
+}
+
+.tabs button{
+flex:1;
+min-width:120px;
+padding:18px 16px;
+background:linear-gradient(135deg, #c62828 0%, #d32f2f 100%);
+color:white;
+border:none;
+border-radius:10px;
+font-weight:600;
+font-size:clamp(13px, 3vw, 17px);
+cursor:pointer;
+transition:all 0.3s ease;
+box-shadow:0 4px 12px rgba(211, 47, 47, 0.3);
+-webkit-tap-highlight-color:transparent;
+user-select:none;
+min-height:50px;
+white-space:nowrap;
+text-overflow:ellipsis;
+}
+
+.tabs button:active{
+transform:scale(0.97);
+}
+
+.tabs button:hover{
+transform:translateY(-2px);
+box-shadow:0 6px 16px rgba(211, 47, 47, 0.5);
+}
+
+.tabs button.active{
+background:linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%);
+color:#000;
+box-shadow:0 6px 20px rgba(255, 179, 0, 0.5);
+transform:translateY(-2px);
+}
+
+@media (max-width: 1024px){
+.tabs{
+gap:8px;
+padding:14px;
+}
+.tabs button{
+padding:14px 12px;
+font-size:clamp(12px, 2.8vw, 15px);
+min-width:110px;
+}
+}
+
+@media (max-width: 768px){
+.tabs{
+gap:6px;
+padding:12px;
+}
+.tabs button{
+padding:12px 10px;
+font-size:clamp(11px, 2.5vw, 14px);
+min-width:100px;
+min-height:44px;
+}
+}
+
+@media (max-width: 600px){
+.tabs{
+gap:4px;
+padding:10px;
+}
+.tabs button{
+flex:1;
+padding:10px 8px;
+font-size:clamp(10px, 2.3vw, 13px);
+min-width:80px;
+min-height:42px;
+}
+}
+
+.menu{
+flex:1;
+min-height:0;
+overflow:auto;
+padding:16px;
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+gap:16px;
+align-content:start;
+}
+
+.menu::-webkit-scrollbar{
+width:8px;
+}
+
+.menu::-webkit-scrollbar-track{
+background:rgba(0,0,0,0.2);
+border-radius:10px;
+}
+
+.menu::-webkit-scrollbar-thumb{
+background:var(--gold-dark);
+border-radius:10px;
+}
+
+@media (max-width: 1024px){
+.menu{
+grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+gap:14px;
+padding:14px;
+}
+}
+
+@media (max-width: 768px){
+.menu{
+grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+gap:12px;
+padding:12px;
+}
+}
+
+@media (max-width: 600px){
+.menu{
+grid-template-columns:repeat(2,1fr);
+gap:10px;
+padding:10px;
+}
+}
+
+.menu-item{
+position:relative;
+padding:24px 20px;
+background:linear-gradient(135deg, var(--card-bg) 0%, #333 100%);
+border:2px solid transparent;
+border-radius:12px;
+cursor:pointer;
+transition:all 0.3s ease;
+box-shadow:0 4px 12px rgba(0,0,0,0.3);
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+min-height:100px;
+-webkit-tap-highlight-color:transparent;
+user-select:none;
+background-size:cover;
+background-position:center;
+background-repeat:no-repeat;
+overflow:hidden;
+}
+
+@media (max-width: 768px){
+.menu-item{
+padding:18px 16px;
+min-height:90px;
+}
+}
+
+@media (max-width: 600px){
+.menu-item{
+padding:14px 12px;
+min-height:80px;
+}
+}
+
+.menu-item::before{
+content:"";
+position:absolute;
+top:0;
+left:0;
+right:0;
+bottom:0;
+background:linear-gradient(135deg, rgba(42, 42, 42, 0.65) 0%, rgba(51, 51, 51, 0.65) 100%);
+z-index:0;
+transition:all 0.3s ease;
+}
+
+.menu-item:hover::before{
+background:linear-gradient(135deg, rgba(42, 42, 42, 0.4) 0%, rgba(51, 51, 51, 0.4) 100%);
+}
+
+.menu-item:active{
+transform:scale(0.97);
+}
+
+.menu-item:hover{
+transform:translateY(-4px);
+border-color:var(--gold);
+box-shadow:0 8px 24px rgba(255, 213, 79, 0.3);
+}
+
+.item-name{
+font-size:14px;
+font-weight:600;
+color:var(--gold);
+margin-bottom:8px;
+text-align:center;
+position:relative;
+z-index:1;
+text-shadow:1px 1px 3px rgba(0,0,0,0.8);
+}
+
+.item-price{
+font-size:18px;
+font-weight:bold;
+color:var(--gold-dark);
+position:relative;
+z-index:1;
+text-shadow:1px 1px 3px rgba(0,0,0,0.8);
+}
+
+@media (max-width: 768px){
+.item-name{
+font-size:clamp(12px, 2vw, 13px);
+margin-bottom:6px;
+}
+.item-price{
+font-size:clamp(15px, 2.5vw, 16px);
+}
+}
+
+@media (max-width: 600px){
+.item-name{
+font-size:clamp(11px, 1.8vw, 12px);
+margin-bottom:4px;
+}
+.item-price{
+font-size:clamp(13px, 2.2vw, 14px);
+}
+}
+
+/* ===== BILL PANEL ===== */
+.bill .cut-line{display:none;}
+.bill{
+width:35%;
+min-width:0;
+min-height:0;
+background:linear-gradient(to bottom, #ffffff 0%, #f5f5f5 100%);
+color:black;
+border-radius:12px;
+padding:10px;
+display:flex;
+flex-direction:column;
+box-shadow:0 8px 32px rgba(0,0,0,0.5);
+border:2px solid var(--gold-dark);
+overflow:hidden;
+}
+
+@media (max-width: 768px){
+.bill{
+width:40%;
+padding:8px;
+}
+}
+
+@media (max-width: 600px){
+.bill{
+width:100%;
+height:auto;
+max-height:35vh;
+padding:8px;
+border-radius:10px;
+}
+}
+
+.bill-header{
+flex-shrink:0;
+border-bottom:1px dashed #999;
+padding-bottom:6px;
+margin-bottom:8px;
+text-align:center;
+position:relative;
+}
+
+.bill-header b{
+font-size:15px;
+color:#000;
+}
+
+.bill-subtitle{
+color:#555;
+font-size:12px;
+margin-top:2px;
+}
+
+.bill-number{
+text-align:right;
+font-size:11px;
+color:#000;
+font-weight:bold;
+margin-bottom:4px;
+display:flex;
+align-items:center;
+justify-content:flex-end;
+gap:4px;
+}
+
+.bill-no-input{
+width:50px;
+padding:2px 4px;
+border:1px solid #999;
+border-radius:4px;
+font-size:12px;
+font-weight:bold;
+text-align:center;
+background:white;
+color:#000;
+}
+
+.bill-no-input:focus{
+outline:none;
+border-color:var(--gold-dark);
+box-shadow:0 0 0 2px rgba(255, 179, 0, 0.2);
+}
+
+/* On screen: show input, hide static number; in print the opposite */
+.bill-no-display{ display:inline; }
+
+.token-number{
+text-align:right;
+font-size:12px;
+color:#000;
+font-weight:bold;
+margin-bottom:6px;
+}
+
+.datetime{
+display:flex;
+justify-content:space-between;
+font-size:10px;
+margin-top:4px;
+color:#666;
+font-weight:500;
+}
+
+.bill-items{
+flex:1;
+min-height:80px;
+overflow:auto;
+margin-bottom:6px;
+}
+
+.bill-items::-webkit-scrollbar{
+width:6px;
+}
+
+.bill-items::-webkit-scrollbar-track{
+background:#f0f0f0;
+border-radius:10px;
+}
+
+.bill-items::-webkit-scrollbar-thumb{
+background:var(--gold-dark);
+border-radius:10px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+font-size:15px;
+margin-bottom:0;
+}
+
+th{
+background:linear-gradient(135deg, #333 0%, #444 100%);
+color:white;
+padding:10px 8px;
+font-weight:600;
+font-size:13px;
+position:sticky;
+top:0;
+z-index:1;
+}
+
+td{
+border-bottom:1px solid #e0e0e0;
+padding:10px 8px;
+text-align:center;
+}
+
+td.qty-cell{
+padding:2px;
+}
+
+.qty-controls{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:2px;
+}
+
+.qty-btn{
+background:var(--gold-dark);
+color:#000;
+border:none;
+border-radius:4px;
+width:32px;
+height:32px;
+cursor:pointer;
+font-size:16px;
+font-weight:bold;
+transition:all 0.2s ease;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.qty-btn:hover{
+background:var(--gold);
+transform:scale(1.1);
+}
+
+.qty-btn:active{
+transform:scale(0.95);
+}
+
+.qty-display{
+min-width:20px;
+font-weight:600;
+font-size:15px;
+}
+
+td.remove-cell{
+padding:2px;
+width:32px;
+}
+
+.remove-btn{
+background:var(--red);
+color:white;
+border:none;
+border-radius:4px;
+padding:5px 10px;
+cursor:pointer;
+font-size:12px;
+font-weight:600;
+transition:all 0.2s ease;
+min-height:32px;
+}
+
+.remove-btn:hover{
+background:#b71c1c;
+transform:scale(1.05);
+}
+
+tr:hover{
+background:rgba(255, 213, 79, 0.1);
+}
+
+.payment-options{
+flex-shrink:0;
+margin-bottom:0px;
+}
+
+.payment-options label{
+display:block;
+font-size:14px;
+font-weight:600;
+margin-bottom:2px;
+color:#333;
+}
+
+.payment-options select{
+width:100%;
+padding:6px 12px;
+border:1px solid #ddd;
+border-radius:6px;
+font-size:15px;
+background:white;
+cursor:pointer;
+transition:all 0.2s ease;
+min-height:42px;
+}
+
+.payment-options select:focus{
+outline:none;
+border-color:var(--gold-dark);
+box-shadow:0 0 0 3px rgba(255, 179, 0, 0.1);
+}
+
+/* ===== CUSTOM ITEM MODAL ===== */
+.add-custom-btn{
+position:fixed;
+bottom:20px;
+right:20px;
+width:70px;
+height:70px;
+background:linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%);
+color:#000;
+border:none;
+border-radius:50%;
+font-size:36px;
+font-weight:bold;
+cursor:pointer;
+box-shadow:0 4px 20px rgba(255, 179, 0, 0.6);
+z-index:1000;
+transition:all 0.3s ease;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.add-custom-btn:hover{
+transform:scale(1.1);
+box-shadow:0 6px 28px rgba(255, 179, 0, 0.8);
+}
+
+.add-custom-btn:active{
+transform:scale(0.95);
+}
+
+.modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.7);
+z-index:2000;
+align-items:center;
+justify-content:center;
+backdrop-filter:blur(4px);
+}
+
+.modal.active{
+display:flex;
+}
+
+.modal-content{
+background:white;
+border-radius:16px;
+padding:24px;
+width:90%;
+max-width:400px;
+box-shadow:0 10px 40px rgba(0,0,0,0.5);
+animation:modalSlideIn 0.3s ease;
+}
+
+.category-modal-content{
+max-width:430px;
+border:2px solid rgba(255, 179, 0, 0.35);
+}
+
+.category-modal-content .form-group input{
+border:2px solid rgba(255, 179, 0, 0.55);
+}
+
+.category-modal-content .form-group input:focus{
+border-color:var(--gold-dark);
+box-shadow:0 0 0 3px rgba(255, 179, 0, 0.12);
+}
+
+.menu-modal-content{
+max-width:470px;
+border:2px solid rgba(255, 179, 0, 0.35);
+}
+
+.menu-modal-content .field-note{
+font-size:12px;
+color:#8a8a8a;
+margin-top:4px;
+}
+
+@keyframes modalSlideIn{
+from{
+transform:translateY(-50px);
+opacity:0;
+}
+to{
+transform:translateY(0);
+opacity:1;
+}
+}
+
+.modal-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+}
+
+.modal-header h2{
+margin:0;
+color:#000;
+font-size:22px;
+}
+
+.modal-close{
+background:none;
+border:none;
+font-size:28px;
+cursor:pointer;
+color:#666;
+width:32px;
+height:32px;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:50%;
+transition:all 0.2s ease;
+}
+
+.modal-close:hover{
+background:#f0f0f0;
+color:#000;
+}
+
+.form-group{
+margin-bottom:16px;
+}
+
+.form-group label{
+display:block;
+margin-bottom:6px;
+font-weight:600;
+color:#333;
+font-size:14px;
+}
+
+.form-group input{
+width:100%;
+padding:10px 12px;
+border:2px solid #ddd;
+border-radius:8px;
+font-size:15px;
+transition:all 0.2s ease;
+}
+
+.form-group input:focus{
+outline:none;
+border-color:var(--gold-dark);
+box-shadow:0 0 0 3px rgba(255, 179, 0, 0.1);
+}
+
+.form-group select{
+width:100%;
+padding:10px 12px;
+border:2px solid #ffc107;
+border-radius:8px;
+font-size:15px;
+background-color:#fff;
+color:#333;
+cursor:pointer;
+transition:all 0.2s ease;
+}
+
+.form-group select:focus{
+outline:none;
+border-color:var(--gold-dark);
+box-shadow:0 0 0 3px rgba(255, 179, 0, 0.1);
+}
+
+.form-group select option{
+padding:8px;
+background-color:#fff;
+color:#333;
+}
+
+.modal-actions{
+display:flex;
+gap:10px;
+margin-top:20px;
+}
+
+.modal-actions button{
+flex:1;
+padding:12px;
+border:none;
+border-radius:8px;
+font-weight:600;
+font-size:15px;
+cursor:pointer;
+transition:all 0.2s ease;
+}
+
+.btn-add{
+background:linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%);
+color:#000;
+}
+
+.btn-add:hover{
+transform:translateY(-2px);
+box-shadow:0 4px 12px rgba(255, 179, 0, 0.4);
+}
+
+.btn-cancel{
+background:#e0e0e0;
+color:#333;
+}
+
+.btn-cancel:hover{
+background:#d0d0d0;
+}
+
+.btn-delete{
+background:linear-gradient(135deg, #b71c1c 0%, #d32f2f 100%);
+color:#fff;
+}
+
+.btn-delete:hover{
+transform:translateY(-2px);
+box-shadow:0 4px 12px rgba(211, 47, 47, 0.4);
+}
+
+.total-section{
+flex-shrink:0;
+background:linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+color:var(--gold);
+padding:8px 10px;
+border-radius:8px;
+margin-bottom:6px;
+margin-top:0;
+}
+
+.total{
+font-size:20px;
+font-weight:bold;
+text-align:right;
+text-shadow:1px 1px 4px rgba(0,0,0,0.3);
+}
+
+.footer{
+flex-shrink:0;
+text-align:center;
+font-size:10px;
+color:#666;
+border-top:1px dashed #aaa;
+margin-top:4px;
+padding-top:4px;
+}
+
+.footer b{
+font-weight:700;
+}
+
+.actions{
+flex-shrink:0;
+display:flex;
+gap:8px;
+}
+
+.actions button{
+flex:1;
+padding:10px;
+border:none;
+border-radius:8px;
+font-weight:bold;
+font-size:14px;
+cursor:pointer;
+transition:all 0.3s ease;
+-webkit-tap-highlight-color:transparent;
+user-select:none;
+min-height:44px;
+}
+
+.actions button:active{
+transform:scale(0.97);
+}
+
+.print{
+background:linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%);
+color:#000;
+box-shadow:0 4px 12px rgba(255, 179, 0, 0.4);
+}
+
+.print:hover{
+transform:translateY(-2px);
+box-shadow:0 6px 16px rgba(255, 179, 0, 0.6);
+}
+
+.clear{
+background:linear-gradient(135deg, #c62828 0%, var(--red) 100%);
+color:white;
+box-shadow:0 4px 12px rgba(211, 47, 47, 0.4);
+}
+
+.clear:hover{
+transform:translateY(-2px);
+box-shadow:0 6px 16px rgba(211, 47, 47, 0.6);
+}
+
+.empty-bill{
+text-align:center;
+color:#999;
+padding:40px 20px;
+font-style:italic;
+}
+
+/* ===== PRINT – normal page, clean thermal (no dark backgrounds) ===== */
+@media print{
+@page{
+size: auto;
+margin: 12px;
+}
+html, body{
+height: auto;
+overflow: visible;
+margin: 0;
+padding: 0;
+background: #fff !important;
+color: #000 !important;
+-webkit-print-color-adjust: exact;
+print-color-adjust: exact;
+}
+*{
+margin: 0;
+padding: 0;
+}
+.left,.actions,.header,.add-custom-btn,.add-permanent-btn,.modal,.bill-no-input,.page-footer{display:none !important;}
+.bill .cut-line,.customer-receipt .cut-line{display:none !important;}
+.remove-btn, .remove-cell, th:last-child{display:none !important;}
+.qty-btn{display:none !important;}
+.qty-controls{display:inline !important;}
+.qty-display{font-size:9px !important;}
+
+/* Force clean print: white background, black text only (avoids smudged dark blocks on thermal) */
+.bill,
+.bill *,
+.customer-receipt,
+.customer-receipt *{
+background: transparent !important;
+background-image: none !important;
+box-shadow: none !important;
+text-shadow: none !important;
+color: #000 !important;
+}
+.bill,
+.customer-receipt{
+background: #fff !important;
+}
+
+
+
+/* Shared slip size: first and second bill – slightly smaller */
+.bill,
+.customer-receipt{
+width: 65mm !important;
+min-width: 65mm !important;
+max-width: 65mm !important;
+margin-left: auto !important;
+margin-right: auto !important;
+padding: 6px !important;
+box-sizing: border-box !important;
+}
+
+/* Slip 1: Kitchen/Bill – prints first */
+.bill{
+border: none !important;
+page-break-after: always !important;
+page-break-inside: avoid !important;
+font-size: 12px !important;
+}
+.bill::after{
+content: "";
+display: block;
+height: 2px;
+}
+.bill-header{
+padding-bottom:1px !important;
+margin-bottom:1px !important;
+border: none !important;
+}
+.bill-header b{
+font-size: 12px !important;
+margin:0 !important;
+line-height:1.2 !important;
+}
+.bill-subtitle{
+font-size: 9px !important;
+margin-top:0 !important;
+line-height:1.2 !important;
+}
+.bill-number{
+display:block !important;
+font-size: 9px !important;
+margin-bottom:0 !important;
+line-height:1.2 !important;
+}
+.bill-number::after{
+content: none;
+}
+.bill-no-display{
+display: inline !important;
+}
+.bill-no-input{
+display:none !important;
+}
+.token-number{
+display:block !important;
+font-size: 9px !important;
+margin-bottom:0 !important;
+line-height:1.2 !important;
+}
+.datetime{
+margin-top:1px !important;
+font-size: 9px !important;
+line-height:1.2 !important;
+}
+.bill-items{
+margin-bottom:1px !important;
+flex:none !important;
+}
+.payment-options{
+display: flex !important;
+flex-direction: row !important;
+flex-wrap: nowrap !important;
+align-items: baseline !important;
+gap: 2px !important;
+margin:0 !important;
+padding:0 !important;
+line-height:1 !important;
+}
+.payment-options label{
+font-size: 9px !important;
+margin:0 !important;
+display:inline !important;
+flex-shrink: 0 !important;
+line-height: 1 !important;
+}
+.payment-options select{
+display:inline !important;
+border:none !important;
+padding:0 !important;
+font-size: 9px !important;
+font-weight:bold !important;
+-webkit-appearance:none !important;
+-moz-appearance:none !important;
+appearance:none !important;
+background: transparent !important;
+background-image: none !important;
+line-height: 1 !important;
+}
+.payment-options + .payment-options{
+margin-top: -8px !important;
+}
+table{
+margin:0 !important;
+background: transparent !important;
+border-collapse: collapse;
+}
+th{
+padding:2px 3px !important;
+font-size: 11px !important;
+line-height:1.2 !important;
+background: transparent !important;
+border-bottom: 1px solid #000 !important;
+font-weight: bold !important;
+}
+td{
+padding:2px 3px !important;
+font-size: 11px !important;
+line-height:1.2 !important;
+background: transparent !important;
+border: none !important;
+}
+.total-section{
+margin:4px 0 !important;
+padding:2px 0 !important;
+background: transparent !important;
+border-top: 1px solid #000 !important;
+}
+.total{
+font-size: 14px !important;
+margin:0 !important;
+line-height:1.2 !important;
+font-weight: bold !important;
+}
+
+.footer{
+margin-top:2px !important;
+padding-top:2px !important;
+font-size: 9px !important;
+line-height:1.2 !important;
+}
+
+/* Slip 2: Customer Token – same size as slip 1 */
+.customer-receipt{
+display: block !important;
+background: white !important;
+color: black !important;
+page-break-before: always !important;
+page-break-inside: avoid !important;
+font-size: 12px !important;
+}
+.customer-receipt .bill-header{
+padding-bottom: 1px !important;
+margin-bottom: 1px !important;
+border-bottom: 1px dashed #000 !important;
+}
+.customer-receipt .bill-header b{
+font-size: 12px !important;
+line-height: 1.2 !important;
+}
+.customer-receipt .bill-subtitle{
+font-size: 9px !important;
+margin-top: 0 !important;
+line-height: 1.2 !important;
+}
+.customer-receipt .token-number{
+font-size: 9px !important;
+margin-bottom: 0 !important;
+line-height: 1.2 !important;
+}
+.customer-receipt .datetime{
+font-size: 9px !important;
+margin-top: 1px !important;
+line-height: 1.2 !important;
+}
+.customer-receipt .customer-items{
+margin-top: 0 !important;
+margin-bottom: 1px !important;
+}
+.customer-receipt .customer-items .item{
+padding: 2px 0 !important;
+border-bottom: 1px dashed #000 !important;
+font-size: 9px !important;
+font-weight: 500 !important;
+line-height: 1.2 !important;
+}
+.customer-receipt .footer{
+font-size: 9px !important;
+margin-top: 2px !important;
+padding-top: 2px !important;
+line-height: 1.2 !important;
+}
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablet (iPad, small laptops) */
+@media screen and (max-width: 1024px){
+.header h1{
+font-size:28px;
+}
+.left{
+width:60%;
+}
+.bill{
+width:40%;
+}
+.menu{
+grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+}
+}
+
+/* Mobile Landscape & Small Tablets */
+@media screen and (max-width: 768px){
+.header h1{
+font-size:24px;
+}
+.header h3{
+font-size:14px;
+}
+.header-info{
+flex-direction:column;
+gap:4px;
+}
+.location, .owner{
+font-size:12px;
+}
+.container{
+flex-direction:column;
+}
+.left{
+width:100%;
+flex:1;
+min-height:200px;
+}
+.bill{
+width:100%;
+flex:1;
+min-height:280px;
+}
+.tabs{
+gap:6px;
+padding:8px;
+}
+.tabs button{
+padding:10px 8px;
+font-size:13px;
+}
+.menu{
+grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+gap:8px;
+}
+.menu-item{
+min-height:90px;
+padding:16px 12px;
+}
+.item-name{
+font-size:13px;
+}
+.item-price{
+font-size:16px;
+}
+}
+
+/* Mobile Portrait */
+@media screen and (max-width: 480px){
+.header{
+padding:12px 8px;
+}
+.header h1{
+font-size:20px;
+}
+.header h3{
+font-size:12px;
+}
+.header-info{
+font-size:10px;
+padding:0 10px;
+}
+.container{
+padding:8px;
+gap:8px;
+}
+.left{
+height:auto;
+min-height:280px;
+}
+.bill{
+padding:12px;
+max-height:55vh;
+overflow-y:auto;
+}
+.bill-items{
+max-height:26vh;
+}
+.tabs{
+gap:4px;
+padding:6px;
+flex-wrap:wrap;
+}
+.add-to-menu-btn{
+padding:10px;
+font-size:13px;
+margin-bottom:8px;
+}
+.tabs button{
+padding:8px 6px;
+font-size:12px;
+min-width:80px;
+}
+.menu{
+grid-template-columns:repeat(2, 1fr);
+gap:6px;
+padding:8px;
+}
+.menu-item{
+min-height:80px;
+padding:12px 8px;
+}
+.item-name{
+font-size:12px;
+}
+.item-price{
+font-size:14px;
+}
+.bill-header b{
+font-size:16px;
+}
+.bill-subtitle{
+font-size:12px;
+}
+.datetime{
+font-size:10px;
+}
+table{
+font-size:11px;
+}
+th, td{
+padding:6px 4px;
+}
+th:last-child, .remove-cell{
+padding:4px 2px;
+width:35px;
+}
+.qty-btn{
+width:22px;
+height:22px;
+font-size:13px;
+}
+.qty-display{
+min-width:22px;
+font-size:12px;
+}
+.remove-btn{
+padding:3px 6px;
+font-size:10px;
+}
+.payment-options{
+margin-bottom:6px;
+}
+.payment-options label{
+font-size:10px;
+}
+.payment-options select{
+padding:5px 6px;
+font-size:11px;
+}
+.total{
+font-size:18px;
+}
+.actions button{
+padding:8px;
+font-size:13px;
+}
+.add-custom-btn{
+width:50px;
+height:50px;
+bottom:15px;
+right:15px;
+font-size:28px;
+}
+.modal-content{
+width:95%;
+padding:20px;
+max-height:88vh;
+overflow-y:auto;
+}
+.modal-header h2{
+font-size:18px;
+}
+}
+
+/* Large Desktop */
+@media screen and (min-width: 1440px){
+.container{
+max-width:1400px;
+margin:0 auto;
+}
+.header h1{
+font-size:36px;
+}
+.menu{
+grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+}
+}
+
+/* Ultra-wide screens */
+@media screen and (min-width: 1920px){
+.container{
+max-width:1600px;
+}
+}
+
+.customer-receipt{
+display:none;
+background:white;
+color:black;
+}
+
+
+.customer-items{
+margin-top:12px;
+}
+
+.customer-items .item{
+padding:6px 0;
+border-bottom:1px dashed #ccc;
+font-size:13px;
+font-weight:500;
+}
+
+</style>
+</head>
+
+<body>
+
+<header class="header" role="banner">
+<h1>Sri Vengamamba Food Court</h1>
+<h3>Chinese Kitchen / Juice Bar<span class="billing-portal-text">Billing Portal</span></h3>
+<div class="header-top-row">
+<div class="header-icons">
+<div class="user-info">
+<div class="settings-container">
+  <button class="header-icon-btn settings-btn" id="settingsBtn" title="Settings" aria-label="Settings">Settings</button>
+  <div class="settings-dropdown" id="settingsDropdown">
+    <div class="settings-header-label" id="settingsRoleLabel">Admin</div>
+    <button class="dropdown-menu-btn edit-menu-toggle" id="editMenuToggle" aria-expanded="false">Edit Menu <span class="chevron">▼</span></button>
+    <div class="edit-menu-submenu" id="editMenuSubmenu">
+      <button class="dropdown-menu-btn" onclick="openAddCategoryModal()">Add Category</button>
+      <button class="dropdown-menu-btn" onclick="openDeleteCategoryModal()">Delete Category</button>
+      <button class="dropdown-menu-btn" onclick="openPermanentModal()">Add Menu</button>
+      <button class="dropdown-menu-btn" onclick="openDeleteMenuModal()">Delete Menu</button>
+    </div>
+    <hr class="settings-divider">
+    <button class="dropdown-menu-btn logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+
+</div>
+</div>
+</div>
+<div class="analytics-btn-wrapper">
+<button class="header-icon-btn" id="analyticsBtn" title="View Analytics" aria-label="View Analytics">Analytics</button>
+</div>
+</div>
+<div class="header-info">
+<div class="location"><strong>Location:</strong> Anits Campus Road, Sangivalasa,<br>Thagarapuvalasa, Vishakapatnam, AP - 531162</div>
+<div class="owner"><strong>Owner:</strong> Kesanapalli Sailaja</div>
+</div>
+</header>
+
+<main class="container" role="main" aria-label="POS System Interface">
+
+<div class="left">
+<button class="add-to-menu-btn" onclick="openPermanentModal()" title="Add New Item to Menu">+ Add to Menu</button>
+<div class="tabs" id="tabs"></div>
+<div class="menu" id="menu"></div>
+</div>
+
+<div class="bill">
+
+<div class="cut-line"></div>
+
+<div class="bill-header">
+<div class="bill-number">
+Bill No: <span id="billNoDisplay" class="bill-no-display" aria-hidden="false">0</span>
+</div>
+<b>Sri Vengamamba Food Court</b><br>
+<span class="bill-subtitle">Chinese Kitchen / Juice Bar</span>
+<div class="datetime">
+<span id="date"></span>
+<span id="time"></span>
+</div>
+</div>
+
+<div class="bill-items">
+<table id="billTable">
+<thead>
+<tr><th>Item</th><th>Qty</th><th>Price</th><th>Remove</th></tr>
+</thead>
+<tbody id="billBody"></tbody>
+</table>
+</div>
+
+<div class="payment-options">
+<label>Payment Method:</label>
+<select id="paymentMethod">
+<option value="UPI">UPI</option>
+<option value="Cash">Cash</option>
+</select>
+</div>
+
+<div class="payment-options">
+<label>Order Type:</label>
+<select id="orderType">
+<option value="Dine-in / Take Out">Dine-in / Take Out</option>
+<option value="Swiggy / Zomato">Swiggy / Zomato</option>
+</select>
+</div>
+
+<div class="total-section">
+<div class="total">Total: ₹<span id="total">0</span></div>
+</div>
+
+<div class="actions">
+<button id="printBtn" class="print" onclick="printReceipt()">Print</button>
+<button id="clearBtn" class="clear" onclick="clearBill()">Clear</button>
+</div>
+
+<div class="footer" style="margin-top:4px;"><div style="font-size:12px;margin-bottom:2px;">Thank you!</div><b>© ANITS 2023–2027 CSE 88 DEV</b></div>
+
+<div class="cut-line thermal-cut"></div>
+
+</div>
+
+
+</main>
+
+<footer class="page-footer" role="contentinfo">
+  <b>© ANITS 2023–2027 CSE 88 DEV</b>
+</footer>
+
+<!-- Customer Token Receipt -->
+<aside class="customer-receipt" id="customerReceipt" role="complementary">
+
+<div class="cut-line"></div>
+
+<div class="bill-header">
+<div class="token-number">Token No: <span id="tokenNumber">1</span></div>
+<b>Sri Vengamamba Food Court</b><br>
+<span class="bill-subtitle">Chinese Kitchen / Juice Bar</span>
+<div class="datetime">
+<span id="dateCustomer"></span>
+<span id="timeCustomer"></span>
+</div>
+</div>
+
+<div class="customer-items" id="customerItems"></div>
+
+<div class="footer" style="margin-top:6px;"><div style="font-size:12px;margin-bottom:2px;">Thank you!</div><b>© ANITS 2023–2027 CSE 88 DEV</b></div>
+
+<div class="cut-line thermal-cut"></div>
+
+</aside>
+
+<!-- Add Custom Item Button -->
+<button class="add-custom-btn" onclick="openCustomModal()" title="Add Custom Item">+</button>
+
+<!-- Custom Item Modal -->
+<div class="modal" id="customModal">
+<div class="modal-content">
+<div class="modal-header">
+<h2>Add Custom Item</h2>
+<button class="modal-close" onclick="closeCustomModal()">×</button>
+</div>
+<form onsubmit="addCustomItem(event)">
+<div class="form-group">
+<label for="customItemName">Item Name *</label>
+<input type="text" id="customItemName" placeholder="e.g., Special Thali" required>
+</div>
+<div class="form-group">
+<label for="customItemPrice">Price (₹) *</label>
+<input type="number" id="customItemPrice" placeholder="e.g., 150" min="1" required>
+</div>
+<div class="modal-actions">
+<button type="button" class="btn-cancel" onclick="closeCustomModal()">Cancel</button>
+<button type="submit" class="btn-add">Add to Bill</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- Add Permanent Item Modal -->
+<div class="modal" id="permanentModal">
+<div class="modal-content menu-modal-content">
+<div class="modal-header">
+<h2>Add Menu Item</h2>
+<button class="modal-close" onclick="closePermanentModal()">×</button>
+</div>
+<form onsubmit="addPermanentItem(event)">
+<div class="form-group">
+<label for="permanentItemName">Item Name *</label>
+<input type="text" id="permanentItemName" placeholder="e.g., Special Manchurian" required>
+</div>
+<div class="form-group">
+<label for="permanentItemPrice">Price (₹) *</label>
+<input type="number" id="permanentItemPrice" placeholder="e.g., 150" min="1" required>
+</div>
+<div class="form-group">
+<label for="permanentItemCategory">Category *</label>
+<select id="permanentItemCategory" required>
+<option value="Tiffins">Tiffins</option>
+<option value="Meals">Meals</option>
+<option value="Biryanis">Biryanis</option>
+<option value="Starters">Starters</option>
+<option value="Fast Food">Fast Food</option>
+<option value="Juice Bar">Juice Bar</option>
+<option value="Custom">Custom (New Category)</option>
+</select>
+</div>
+<div class="form-group">
+<label for="permanentItemImageUrl">Image URL (Optional)</label>
+<input type="url" id="permanentItemImageUrl" placeholder="https://example.com/image.jpg">
+<div class="field-note">Paste a full image URL</div>
+</div>
+<div class="modal-actions">
+<button type="button" class="btn-cancel" onclick="closePermanentModal()">Cancel</button>
+<button type="submit" class="btn-add">Add to Menu</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- Add Category Modal -->
+<div class="modal" id="addCategoryModal">
+<div class="modal-content category-modal-content">
+<div class="modal-header">
+<h2>Add New Category</h2>
+<button class="modal-close" onclick="closeAddCategoryModal()">×</button>
+</div>
+<form onsubmit="submitAddCategory(event)">
+<div class="form-group">
+<label for="newCategoryName">Category Name *</label>
+<input type="text" id="newCategoryName" placeholder="e.g., Desserts" required>
+</div>
+<div class="modal-actions">
+<button type="button" class="btn-cancel" onclick="closeAddCategoryModal()">Cancel</button>
+<button type="submit" class="btn-add">Add Category</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- Delete Category Modal -->
+<div class="modal" id="deleteCategoryModal">
+<div class="modal-content category-modal-content">
+<div class="modal-header">
+<h2>Delete Category</h2>
+<button class="modal-close" onclick="closeDeleteCategoryModal()">×</button>
+</div>
+<form onsubmit="submitDeleteCategory(event)">
+<div class="form-group">
+<label for="deleteCategorySelect">Select Category to Delete *</label>
+<select id="deleteCategorySelect" required>
+<option value="">-- Select Category --</option>
+</select>
+</div>
+<div class="modal-actions">
+<button type="button" class="btn-cancel" onclick="closeDeleteCategoryModal()">Cancel</button>
+<button type="submit" class="btn-delete">Delete</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- Delete Menu Item Modal -->
+<div class="modal" id="deleteMenuModal">
+<div class="modal-content category-modal-content">
+<div class="modal-header">
+<h2>Delete Menu Item</h2>
+<button class="modal-close" onclick="closeDeleteMenuModal()">×</button>
+</div>
+<form onsubmit="submitDeleteMenuItem(event)">
+<div class="form-group">
+<label for="deleteMenuSelect">Select Item to Delete *</label>
+<select id="deleteMenuSelect" required>
+<option value="">-- Select Item --</option>
+</select>
+</div>
+<div class="modal-actions">
+<button type="button" class="btn-cancel" onclick="closeDeleteMenuModal()">Cancel</button>
+<button type="submit" class="btn-delete">Delete</button>
+</div>
+</form>
+</div>
+</div>
+
+<script>
+// --- Settings Dropdown Logic ---
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsDropdown = document.getElementById('settingsDropdown');
+const editMenuToggle = document.getElementById('editMenuToggle');
+const editMenuSubmenu = document.getElementById('editMenuSubmenu');
+if (settingsBtn && settingsDropdown) {
+  settingsBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    settingsDropdown.style.display = settingsDropdown.style.display === 'block' ? 'none' : 'block';
+  });
+  document.addEventListener('click', function(e) {
+    if (!settingsDropdown.contains(e.target) && e.target !== settingsBtn) {
+      settingsDropdown.style.display = 'none';
+      if (editMenuSubmenu && editMenuToggle) {
+        editMenuSubmenu.classList.remove('active');
+        editMenuToggle.classList.remove('expanded');
+        editMenuToggle.setAttribute('aria-expanded', 'false');
+      }
+    }
+  });
+}
+
+if (editMenuToggle && editMenuSubmenu) {
+  editMenuToggle.addEventListener('click', function(e) {
+    e.stopPropagation();
+    editMenuSubmenu.classList.toggle('active');
+    editMenuToggle.classList.toggle('expanded');
+    editMenuToggle.setAttribute('aria-expanded', editMenuSubmenu.classList.contains('active') ? 'true' : 'false');
+  });
+}
+
+// --- Settings Dropdown Actions (placeholders, connect to your modals) ---
+function openAddCategoryModal() {
+  if(!requireAdminAccess('manage menu categories')) return;
+  const modal = document.getElementById("addCategoryModal");
+  if(modal) modal.classList.add("active");
+  const input = document.getElementById("newCategoryName");
+  if(input){
+    input.value = "";
+    input.focus();
+  }
+}
+function openAddItemModal() {
+  alert('Open Add Item Modal');
+  // TODO: Replace with your modal logic
+}
+function openDeleteCategoryModal() {
+  if(!requireAdminAccess('delete categories')) return;
+  const modal = document.getElementById("deleteCategoryModal");
+  if(modal) modal.classList.add("active");
+  populateDeleteCategorySelect();
+}
+function openDeleteMenuModal() {
+  if(!requireAdminAccess('delete menu items')) return;
+  const modal = document.getElementById("deleteMenuModal");
+  if(modal) modal.classList.add("active");
+  populateDeleteMenuSelect();
+}
+function logout() {
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('user');
+  window.location.href = 'login.html';
+}
+
+function closeAddCategoryModal(){
+  const modal = document.getElementById("addCategoryModal");
+  if(modal) modal.classList.remove("active");
+  const input = document.getElementById("newCategoryName");
+  if(input) input.value = "";
+}
+
+function closeDeleteCategoryModal(){
+  const modal = document.getElementById("deleteCategoryModal");
+  if(modal) modal.classList.remove("active");
+  const select = document.getElementById("deleteCategorySelect");
+  if(select) select.value = "";
+}
+
+function closeDeleteMenuModal(){
+  const modal = document.getElementById("deleteMenuModal");
+  if(modal) modal.classList.remove("active");
+  const select = document.getElementById("deleteMenuSelect");
+  if(select) select.value = "";
+}
+
+function populateDeleteCategorySelect(){
+  const select = document.getElementById("deleteCategorySelect");
+  if(!select) return;
+
+  select.innerHTML = '<option value="">-- Select Category --</option>';
+  customCategories.forEach((categoryName)=>{
+    const option = document.createElement('option');
+    option.value = categoryName;
+    option.textContent = categoryName;
+    select.appendChild(option);
+  });
+}
+
+function populateDeleteMenuSelect(){
+  const select = document.getElementById("deleteMenuSelect");
+  if(!select) return;
+
+  select.innerHTML = '<option value="">-- Select Item --</option>';
+  const sortedItems = [...customItemIndex].sort((a, b) => {
+    const aKey = `${a.category || ''} ${a.name || ''}`.toLowerCase();
+    const bKey = `${b.category || ''} ${b.name || ''}`.toLowerCase();
+    return aKey.localeCompare(bKey);
+  });
+
+  sortedItems.forEach((item)=>{
+    const option = document.createElement('option');
+    option.value = item.name;
+    option.textContent = `${item.name} (${item.category || 'Custom'})`;
+    select.appendChild(option);
+  });
+}
+
+async function submitAddCategory(event){
+  event.preventDefault();
+  const categoryName = (document.getElementById("newCategoryName")?.value || "").trim();
+  if(!categoryName){
+    alert("Please enter a valid category name.");
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const response = await fetch(apiUrl('/api/custom-categories'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ name: categoryName })
+    });
+
+    const result = await response.json();
+    if(!response.ok || !result.success){
+      alert(`❌ ${result.error || 'Failed to add category'}`);
+      return;
+    }
+
+    if(!data[categoryName]){
+      data[categoryName] = [];
+    }
+    if(!customCategories.includes(categoryName)){
+      customCategories.push(categoryName);
+      customCategories.sort((a, b) => a.localeCompare(b));
+    }
+
+    closeAddCategoryModal();
+    rebuildTabs(categoryName);
+    populateDeleteCategorySelect();
+    alert(`✅ Category "${categoryName}" added successfully.`);
+  } catch (error) {
+    alert('❌ Failed to add category. Please try again.');
+  }
+}
+
+async function submitDeleteCategory(event){
+  event.preventDefault();
+  if(!requireAdminAccess('delete categories')) return;
+
+  const select = document.getElementById('deleteCategorySelect');
+  const categoryName = (select?.value || '').trim();
+  if(!categoryName){
+    alert('Please select a category to delete.');
+    return;
+  }
+
+  if(!confirm(`Delete category "${categoryName}"?`)) return;
+
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const response = await fetch(apiUrl(`/api/custom-categories/${encodeURIComponent(categoryName)}`), {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const result = await response.json();
+    if(!response.ok || !result.success){
+      alert(`❌ ${result.error || 'Failed to delete category'}`);
+      return;
+    }
+
+    customCategories = customCategories.filter((name)=>name !== categoryName);
+    delete data[categoryName];
+    closeDeleteCategoryModal();
+    rebuildTabs();
+    populateDeleteCategorySelect();
+    alert(`✅ Category "${categoryName}" deleted successfully.`);
+  } catch (error) {
+    alert('❌ Failed to delete category. Please try again.');
+  }
+}
+
+async function submitDeleteMenuItem(event){
+  event.preventDefault();
+  if(!requireAdminAccess('delete menu items')) return;
+
+  const select = document.getElementById('deleteMenuSelect');
+  const itemName = (select?.value || '').trim();
+  if(!itemName){
+    alert('Please select an item to delete.');
+    return;
+  }
+
+  if(!confirm(`Delete menu item "${itemName}"?`)) return;
+
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const response = await fetch(apiUrl(`/api/custom-items/${encodeURIComponent(itemName)}`), {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const result = await response.json();
+    if(!response.ok || !result.success){
+      alert(`❌ ${result.error || 'Failed to delete menu item'}`);
+      return;
+    }
+
+    customItemIndex = customItemIndex.filter((item)=>item.name !== itemName);
+    Object.keys(data).forEach((categoryName)=>{
+      data[categoryName] = (data[categoryName] || []).filter((item)=>item[0] !== itemName);
+    });
+
+    closeDeleteMenuModal();
+    rebuildTabs();
+    populateDeleteMenuSelect();
+    alert(`✅ Menu item "${itemName}" deleted successfully.`);
+  } catch (error) {
+    alert('❌ Failed to delete menu item. Please try again.');
+  }
+}
+
+// Use local backend when running on localhost/127.0.0.1; otherwise fall back to Render.
+const apiUrl = (path) => {
+  const origin = window.location.origin || '';
+  const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
+  const base = isLocal ? origin : 'https://svfc-ckfb-bp-backend.onrender.com';
+  return base + path;
+};
+
+// ===== AUTHENTICATION CHECK =====
+function checkAuthentication() {
+	const token = localStorage.getItem('authToken');
+	const user = localStorage.getItem('user');
+	
+	if (!token || !user) {
+		// Redirect to login if not authenticated
+		window.location.href = '/login.html';
+		return false;
+	}
+	
+	try {
+		const userData = JSON.parse(user);
+		displayUserInfo(userData);
+	} catch (e) {
+		localStorage.removeItem('authToken');
+		localStorage.removeItem('user');
+		window.location.href = '/login.html';
+	}
+	
+	return true;
+}
+
+function displayUserInfo(user) {
+  applySettingsRoleAccess(user);
+}
+
+function getCurrentUserRole() {
+  try {
+    const rawUser = localStorage.getItem('user');
+    if (!rawUser) return '';
+    const parsed = JSON.parse(rawUser);
+    return (parsed.role || '').toLowerCase();
+  } catch (e) {
+    return '';
+  }
+}
+
+function isAdminUser() {
+  return getCurrentUserRole() === 'admin';
+}
+
+function getCurrentUser() {
+  try {
+    const rawUser = localStorage.getItem('user');
+    if (!rawUser) return null;
+    return JSON.parse(rawUser);
+  } catch (e) {
+    return null;
+  }
+}
+
+function formatSettingsLabel(userObj, role) {
+  const username = ((userObj && userObj.username) ? userObj.username : '').trim();
+  if (username) {
+    const match = username.match(/^casher\s*(\d+)$/i);
+    if (match) return `Cashier ${match[1]}`;
+    if (/^admin$/i.test(username)) return 'Admin';
+    return username.charAt(0).toUpperCase() + username.slice(1);
+  }
+
+  const roleText = (role || 'staff').toString();
+  return roleText.charAt(0).toUpperCase() + roleText.slice(1);
+}
+
+function applySettingsRoleAccess(user) {
+  const roleLabel = document.getElementById('settingsRoleLabel');
+  const editToggle = document.getElementById('editMenuToggle');
+  const editSubmenu = document.getElementById('editMenuSubmenu');
+  const addToMenuBtn = document.querySelector('.add-to-menu-btn');
+  const currentUser = user || getCurrentUser();
+  const role = ((currentUser && currentUser.role) ? currentUser.role : getCurrentUserRole()) || 'staff';
+
+  if (roleLabel) {
+    roleLabel.textContent = formatSettingsLabel(currentUser, role);
+  }
+
+  if (!isAdminUser()) {
+    if (editToggle) {
+      editToggle.style.display = 'none';
+    }
+    if (editSubmenu) {
+      editSubmenu.classList.remove('active');
+      editSubmenu.style.display = 'none';
+    }
+    if (addToMenuBtn) {
+      addToMenuBtn.style.display = 'none';
+    }
+  } else {
+    if (editToggle) {
+      editToggle.style.display = '';
+    }
+    if (editSubmenu) {
+      editSubmenu.style.display = '';
+    }
+    if (addToMenuBtn) {
+      addToMenuBtn.style.display = '';
+    }
+  }
+}
+
+function requireAdminAccess(featureName) {
+  if (!isAdminUser()) {
+    alert(`Access denied. Only admin can ${featureName}.`);
+    return false;
+  }
+  return true;
+}
+
+function setupLogout() {
+	const logoutBtn = document.getElementById('logoutBtn');
+	if (logoutBtn) {
+		logoutBtn.addEventListener('click', function() {
+			localStorage.removeItem('authToken');
+			localStorage.removeItem('user');
+      window.location.href = 'login.html';
+		});
+	}
+}
+
+// Check authentication on page load
+document.addEventListener('DOMContentLoaded', function() {
+	if (checkAuthentication()) {
+		setupLogout();
+    loadCustomCategories();
+		// Load custom menu items from database
+		loadCustomMenuItems();
+	}
+});
+
+/* ===== MENU DATA (DYNAMIC FROM BACKEND) ===== */
+const data = {};
+/* ===== ELEMENTS ===== */
+const tabsDiv=document.getElementById("tabs");
+const menuDiv=document.getElementById("menu");
+const billBody=document.getElementById("billBody");
+const customerItems=document.getElementById("customerItems");
+
+let cart={}, total=0;
+let billNumber=0;
+let isLoadingBillNo = false;
+let lastBillDate = localStorage.getItem('lastBillDate');
+let customCategories = [];
+let customItemIndex = [];
+
+/* CHECK IF DATE HAS CHANGED FOR 24-HOUR RESET */
+function checkDateChangeAndReset() {
+  const today = new Date().toDateString();
+  const storedDate = localStorage.getItem('lastBillDate');
+  
+  if (storedDate !== today) {
+    // Date has changed - reset bill number to start from backend
+    localStorage.setItem('lastBillDate', today);
+    localStorage.removeItem('billNumber');
+    return true;
+  }
+  return false;
+}
+
+/* FETCH BILL NUMBER FROM DATABASE */
+async function fetchNextBillNumber() {
+  if (isLoadingBillNo) return;
+  isLoadingBillNo = true;
+  
+  try {
+    const response = await fetch(apiUrl('/api/token'));
+    const data = await response.json();
+    if (data.success) {
+      billNumber = data.token;
+      localStorage.setItem('billNumber', billNumber);
+      updateBillToken();
+    }
+  } catch (error) {
+  } finally {
+    isLoadingBillNo = false;
+  }
+}
+
+/* INITIALIZE BILL NUMBER ON PAGE LOAD */
+async function loadNumbers(){
+  // Check if 24 hours have passed
+  checkDateChangeAndReset();
+  
+  try {
+    // Always fetch current bill from database to sync
+    const response = await fetch(apiUrl('/api/token/current'));
+    const data = await response.json();
+    
+    if(data.success){
+      billNumber = data.token;
+      localStorage.setItem('billNumber', billNumber);
+      localStorage.setItem('lastBillDate', new Date().toDateString());
+      updateBillToken();
+    }
+  } catch (error) {
+    // Fallback to stored value or 0
+    const stored = localStorage.getItem('billNumber');
+    billNumber = stored ? parseInt(stored) : 0;
+    updateBillToken();
+  }
+}
+
+/* UPDATE BILL AND TOKEN NUMBERS */
+function updateBillToken(){
+  const billNoElement = document.querySelector('.bill-header .bill-number');
+  if(billNoElement) billNoElement.setAttribute('data-bill-no', billNumber);
+  const displayEl = document.getElementById("billNoDisplay");
+  if(displayEl) displayEl.textContent = billNumber;
+  document.getElementById("tokenNumber").innerText=billNumber;
+}
+
+/* NEW BILL LISTENER - Auto-fetch next number */
+async function startNewBill() {
+  if(Object.keys(cart).length > 0){
+    if(confirm("Start a new bill?")){
+      cart = {};
+      await fetchNextBillNumber();
+      render();
+    }
+  } else {
+    await fetchNextBillNumber();
+  }
+}
+
+/* MANUAL INPUT LISTENER */
+document.addEventListener('DOMContentLoaded', function(){
+  loadNumbers();
+});
+
+/* DATE TIME */
+function updateDateTime(){
+const now=new Date();
+const dateStr="Date: "+now.toLocaleDateString();
+const timeStr="Time: "+now.toLocaleTimeString();
+date.innerText=dateStr;
+time.innerText=timeStr;
+dateCustomer.innerText=dateStr;
+timeCustomer.innerText=timeStr;
+}
+setInterval(updateDateTime,1000);
+updateDateTime();
+
+/* TABS */
+function rebuildTabs(activeCategory){
+const categories = Object.keys(data);
+if(categories.length === 0){
+tabsDiv.innerHTML = "";
+menuDiv.innerHTML = "";
+return;
+}
+
+const selectedCategory = activeCategory && data[activeCategory] ? activeCategory : categories[0];
+tabsDiv.innerHTML = "";
+
+categories.forEach((cat)=>{
+let btn=document.createElement("button");
+btn.innerText=cat;
+if(cat === selectedCategory) btn.classList.add("active");
+btn.onclick=()=>{
+document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+btn.classList.add("active");
+load(cat);
+};
+tabsDiv.appendChild(btn);
+});
+
+load(selectedCategory);
+}
+
+/* LOAD MENU */
+function load(cat){
+menuDiv.innerHTML="";
+(data[cat] || []).forEach(item=>{
+let card=document.createElement("div");
+card.className="menu-item";
+card.onclick=()=>add(item[0],item[1]);
+
+// Set background image if available
+if(item[2]){
+card.style.backgroundImage=`url('${item[2]}')`;
+card.style.backgroundSize='cover';
+card.style.backgroundPosition='center';
+card.style.backgroundRepeat='no-repeat';
+}
+
+card.innerHTML=`
+<div class="item-name">${item[0]}</div>
+<div class="item-price">₹${item[1]}</div>
+`;
+
+menuDiv.appendChild(card);
+});
+}
+rebuildTabs(Object.keys(data)[0]);
+
+/* BILLING */
+function add(n,p){
+cart[n]?cart[n].qty++:cart[n]={price:p,qty:1};
+render();
+}
+
+function render(){
+billBody.innerHTML="";
+customerItems.innerHTML="";
+total=0;
+
+if(Object.keys(cart).length === 0){
+billBody.innerHTML='<tr><td colspan="4" class="empty-bill">No items added yet</td></tr>';
+}else{
+for(let k in cart){
+let r=billBody.insertRow(-1);
+r.insertCell(0).innerText=k;
+
+// Quantity controls
+let qtyCell=r.insertCell(1);
+qtyCell.className="qty-cell";
+let qtyControls=document.createElement("div");
+qtyControls.className="qty-controls";
+qtyControls.innerHTML=`
+<button class="qty-btn" onclick="decreaseQty('${k.replace(/'/g, "\\'")}')">−</button>
+<span class="qty-display">${cart[k].qty}</span>
+<button class="qty-btn" onclick="increaseQty('${k.replace(/'/g, "\\'")}')">+</button>
+`;
+qtyCell.appendChild(qtyControls);
+r.insertCell(2).innerText="₹"+cart[k].price*cart[k].qty;
+total+=cart[k].price*cart[k].qty;
+
+// Add remove button
+let removeCell=r.insertCell(3);
+removeCell.className="remove-cell";
+let removeBtn=document.createElement("button");
+removeBtn.className="remove-btn";
+removeBtn.innerText="✕";
+removeBtn.onclick=()=>removeItem(k);
+removeCell.appendChild(removeBtn);
+
+// Add to customer receipt (just item names)
+let itemDiv=document.createElement("div");
+itemDiv.className="item";
+itemDiv.innerText=cart[k].qty+" x "+k;
+customerItems.appendChild(itemDiv);
+}
+}
+
+document.getElementById("total").innerText=total;
+// update action buttons state
+updateActionButtons();
+}
+
+function updateActionButtons(){
+	const printBtn = document.getElementById('printBtn');
+	const clearBtn = document.getElementById('clearBtn');
+	const hasItems = Object.keys(cart).length>0 && total>0;
+	if(printBtn) printBtn.disabled = !hasItems;
+	if(clearBtn) clearBtn.disabled = !Object.keys(cart).length>0;
+	// visual disabled styling
+	if(printBtn) printBtn.style.opacity = printBtn.disabled ? '0.6' : '1';
+	if(clearBtn) clearBtn.style.opacity = clearBtn.disabled ? '0.6' : '1';
+}
+
+function increaseQty(itemName){
+if(cart[itemName]){
+cart[itemName].qty++;
+render();
+}
+}
+
+function decreaseQty(itemName){
+if(cart[itemName]){
+if(cart[itemName].qty > 1){
+cart[itemName].qty--;
+render();
+}else{
+// If quantity is 1, remove the item
+removeItem(itemName);
+}
+}
+}
+
+function removeItem(itemName){
+delete cart[itemName];
+render();
+}
+
+function showIndexPopup(message, type='danger') {
+  let popup = document.getElementById('indexStatusPopup');
+  if (!popup) {
+    popup = document.createElement('div');
+    popup.id = 'indexStatusPopup';
+    popup.style.position = 'fixed';
+    popup.style.right = '20px';
+    popup.style.top = '16px';
+    popup.style.zIndex = '5000';
+    popup.style.padding = '12px 16px';
+    popup.style.borderRadius = '8px';
+    popup.style.color = '#fff';
+    popup.style.fontWeight = '700';
+    popup.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.35)';
+    popup.style.opacity = '0';
+    popup.style.transform = 'translateY(-10px)';
+    popup.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+    document.body.appendChild(popup);
+  }
+
+  popup.style.background = type === 'danger'
+    ? 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)'
+    : type === 'gold'
+      ? 'linear-gradient(135deg, #ffb300 0%, #ffd54f 100%)'
+      : 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)';
+
+  popup.style.color = type === 'gold' ? '#111' : '#fff';
+
+  popup.textContent = message;
+  popup.style.opacity = '1';
+  popup.style.transform = 'translateY(0)';
+
+  clearTimeout(showIndexPopup._timer);
+  showIndexPopup._timer = setTimeout(() => {
+    popup.style.opacity = '0';
+    popup.style.transform = 'translateY(-10px)';
+  }, 2200);
+}
+
+async function clearBill(){
+  if(Object.keys(cart).length > 0){
+    cart={};
+    render();
+    showIndexPopup('Items Cleared', 'danger');
+  }
+}
+
+function resetBillPanelDefaults(){
+  cart = {};
+  render();
+
+  const paymentMethod = document.getElementById('paymentMethod');
+  const orderType = document.getElementById('orderType');
+  if (paymentMethod) paymentMethod.selectedIndex = 0;
+  if (orderType) orderType.selectedIndex = 0;
+}
+
+// Print lock to prevent rapid double-printing on mobile
+let isPrinting = false;
+
+function printReceipt(){
+// Prevent multiple rapid print calls (solves mobile second-print issue)
+if(isPrinting){
+  return;
+}
+
+async function proceedWithPrint(){
+// require positive total to avoid printing zero receipts
+if(Object.keys(cart).length > 0 && total > 0){
+  isPrinting = true;
+
+try {
+  // Always reserve a fresh token before saving/printing to avoid duplicate bill numbers.
+  const tokenResponse = await fetch(apiUrl('/api/token'));
+  const tokenData = await tokenResponse.json();
+  if(!tokenResponse.ok || !tokenData.success || !tokenData.token){
+    throw new Error(tokenData.error || 'Failed to fetch bill token');
+  }
+
+  billNumber = tokenData.token;
+  localStorage.setItem('billNumber', billNumber);
+  updateBillToken();
+} catch (error) {
+  alert('Error generating bill number: ' + error.message);
+  isPrinting = false;
+  return;
+}
+
+// Prepare bill data with current bill number
+const billData = {
+items: Object.entries(cart).map(([name, item]) => ({
+name: name,
+price: item.price,
+qty: item.qty
+})),
+total: total,
+payment: document.getElementById("paymentMethod").value,
+orderType: document.getElementById("orderType").value,
+token: billNumber
+};
+
+// Validate bill data before sending
+if(!billData.items || billData.items.length === 0) {
+  alert('Error: No items in bill. Please add items before printing.');
+  isPrinting = false;
+  return;
+}
+
+if(!billData.token || billData.token === 0) {
+  alert('Error: Invalid bill number. Please try again.');
+  isPrinting = false;
+  return;
+}
+
+if(!billData.payment) {
+  alert('Error: Please select a payment method.');
+  isPrinting = false;
+  return;
+}
+
+if(!billData.orderType) {
+  alert('Error: Please select an order type.');
+  isPrinting = false;
+  return;
+}
+
+// Save bill to database and THEN print
+fetch(apiUrl('/api/bill'), {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify(billData)
+})
+.then(response => {
+  if(!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  return response.json();
+})
+.then(data => {
+  if(data.success) {
+    // Bill saved successfully, proceed with printing
+    // NOW proceed with printing after bill is saved
+    let didFinalizePrint = false;
+    function finalizePrintSuccess(){
+      if(didFinalizePrint) return;
+      didFinalizePrint = true;
+      isPrinting = false;
+      resetBillPanelDefaults();
+      showIndexPopup('Bill Printed', 'gold');
+    }
+
+    function cleanupAfterPrint(){
+      window.removeEventListener('afterprint', cleanupAfterPrint);
+      finalizePrintSuccess();
+    }
+    
+    window.addEventListener('afterprint', cleanupAfterPrint);
+    window.print();
+    
+    // Safety timeout: release print lock after 8 seconds if afterprint event doesn't fire
+    setTimeout(()=>{
+      if(isPrinting) finalizePrintSuccess();
+    }, 8000);
+    
+  } else {
+    alert('Error saving bill: ' + (data.error || 'Unknown error'));
+    isPrinting = false;
+  }
+})
+.catch(error => {
+  alert('Error saving bill: ' + error.message);
+  isPrinting = false;
+});
+
+}else{
+alert("Please add items to the bill before printing.");
+isPrinting = false;
+}
+}
+
+proceedWithPrint();
+}
+
+// Custom Item Modal Functions
+function openCustomModal(){
+document.getElementById("customModal").classList.add("active");
+document.getElementById("customItemName").focus();
+}
+
+function closeCustomModal(){
+document.getElementById("customModal").classList.remove("active");
+document.getElementById("customItemName").value="";
+document.getElementById("customItemPrice").value="";
+}
+
+function addCustomItem(event){
+event.preventDefault();
+let itemName=document.getElementById("customItemName").value.trim();
+let itemPrice=parseInt(document.getElementById("customItemPrice").value);
+if(itemName && itemPrice > 0){
+add(itemName, itemPrice);
+closeCustomModal();
+}
+}
+
+// Close modal when clicking outside
+document.getElementById("customModal").addEventListener("click", function(e){
+if(e.target === this){
+closeCustomModal();
+}
+});
+
+// Close modal with Escape key
+document.addEventListener("keydown", function(e){
+if(e.key === "Escape"){
+closeCustomModal();
+closePermanentModal();
+closeAddCategoryModal();
+closeDeleteCategoryModal();
+closeDeleteMenuModal();
+}
+});
+
+// ===== PERMANENT MENU ITEM FUNCTIONS =====
+
+function openPermanentModal(){
+if(!requireAdminAccess('add menu items')) return;
+populatePermanentCategoryOptions();
+document.getElementById("permanentModal").classList.add("active");
+document.getElementById("permanentItemName").focus();
+}
+
+function closePermanentModal(){
+document.getElementById("permanentModal").classList.remove("active");
+document.getElementById("permanentItemName").value="";
+document.getElementById("permanentItemPrice").value="";
+document.getElementById("permanentItemCategory").value="";
+document.getElementById("permanentItemImageUrl").value="";
+}
+
+function populatePermanentCategoryOptions(){
+const categorySelect = document.getElementById('permanentItemCategory');
+if(!categorySelect) return;
+
+const currentValue = categorySelect.value;
+const categories = Object.keys(data);
+categorySelect.innerHTML = '';
+
+categories.forEach((categoryName)=>{
+  const option = document.createElement('option');
+  option.value = categoryName;
+  option.textContent = categoryName;
+  categorySelect.appendChild(option);
+});
+
+if(currentValue && categories.includes(currentValue)){
+  categorySelect.value = currentValue;
+} else if(categories.length > 0){
+  categorySelect.value = categories[0];
+}
+}
+
+async function addPermanentItem(event){
+event.preventDefault();
+const itemName = document.getElementById("permanentItemName").value.trim();
+const itemPrice = parseFloat(document.getElementById("permanentItemPrice").value);
+const itemCategory = document.getElementById("permanentItemCategory").value.trim() || "Custom";
+const itemImageUrl = (document.getElementById("permanentItemImageUrl").value || "").trim();
+
+if(!itemName || !itemPrice || itemPrice <= 0){
+alert("Please enter valid item name and price");
+return;
+}
+
+try {
+const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+const response = await fetch(apiUrl('/api/custom-items'), {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'Authorization': `Bearer ${token}`
+},
+body: JSON.stringify({
+name: itemName,
+price: itemPrice,
+category: itemCategory,
+imageUrl: itemImageUrl
+})
+});
+
+const data = await response.json();
+
+if(data.success){
+alert(`✅ "${itemName}" has been added to the menu!`);
+closePermanentModal();
+// Reload menu to show new item
+await loadCustomMenuItems();
+populatePermanentCategoryOptions();
+} else {
+alert(`❌ Error: ${data.error || 'Failed to add item'}`);
+}
+} catch (error) {
+alert('❌ Failed to add item to menu');
+}
+}
+
+// Load custom menu items from database
+async function loadCustomMenuItems(){
+try {
+const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+const response = await fetch(apiUrl('/api/custom-items'), {
+headers: {
+'Authorization': `Bearer ${token}`
+}
+});
+
+const result = await response.json();
+
+if(result.success && result.items && result.items.length > 0){
+customItemIndex = result.items.map((item)=>(
+  {
+    name: item.name,
+    category: item.category || 'Custom'
+  }
+));
+// Group items by category
+const customByCategory = {};
+result.items.forEach(item => {
+const cat = item.category || 'Custom';
+if(!customByCategory[cat]){
+customByCategory[cat] = [];
+}
+customByCategory[cat].push(item);
+});
+
+// Add custom items to existing menu or create new tabs
+for(const [category, items] of Object.entries(customByCategory)){
+if(!data[category]){
+data[category] = [];
+}
+items.forEach(item => {
+// Check if item already exists in menu (compare by name - first element of array)
+const exists = data[category].some(m => Array.isArray(m) ? m[0] === item.name : m.name === item.name);
+if(!exists){
+// Add in array format: [name, price, imageUrl]
+data[category].push([item.name, item.price, item.imageUrl || ""]);
+}
+});
+}
+
+rebuildTabs();
+populatePermanentCategoryOptions();
+populateDeleteMenuSelect();
+} else {
+customItemIndex = [];
+populateDeleteMenuSelect();
+}
+} catch (error) {
+}
+}
+
+async function loadCustomCategories(){
+try {
+const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+const response = await fetch(apiUrl('/api/custom-categories'), {
+headers: {
+'Authorization': `Bearer ${token}`
+}
+});
+
+const result = await response.json();
+if(result.success && Array.isArray(result.categories)){
+customCategories = [];
+result.categories.forEach((categoryName)=>{
+const normalized = (categoryName || '').trim();
+if(normalized && !data[normalized]){
+data[normalized] = [];
+}
+if(normalized && !customCategories.includes(normalized)){
+customCategories.push(normalized);
+}
+});
+customCategories.sort((a, b) => a.localeCompare(b));
+rebuildTabs();
+populateDeleteCategorySelect();
+populatePermanentCategoryOptions();
+}
+} catch (error) {
+}
+}
+
+// Close permanent modal when clicking outside
+document.getElementById("permanentModal").addEventListener("click", function(e){
+if(e.target === this){
+closePermanentModal();
+}
+});
+
+document.getElementById("addCategoryModal").addEventListener("click", function(e){
+if(e.target === this){
+closeAddCategoryModal();
+}
+});
+
+document.getElementById("deleteCategoryModal").addEventListener("click", function(e){
+if(e.target === this){
+closeDeleteCategoryModal();
+}
+});
+
+document.getElementById("deleteMenuModal").addEventListener("click", function(e){
+if(e.target === this){
+closeDeleteMenuModal();
+}
+});
+
+// Header Icons Event Listeners
+document.addEventListener('DOMContentLoaded', ()=>{
+  const analyticsBtn = document.getElementById('analyticsBtn');
+  
+  if(analyticsBtn){
+    analyticsBtn.addEventListener('click', ()=>{
+      window.location.href = 'analytics.html';
+    });
+  }
+});
+
+// Initial render
+render();
+
+</script>
+</body>
+</html>
