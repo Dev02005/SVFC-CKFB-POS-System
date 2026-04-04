@@ -1118,6 +1118,28 @@ max-width:470px;
 border:2px solid rgba(255, 179, 0, 0.35);
 }
 
+.print-clear-modal-content{
+max-width:430px;
+border:2px solid rgba(255, 179, 0, 0.45);
+background:linear-gradient(180deg, #fffdf5 0%, #ffffff 100%);
+}
+
+.print-clear-message{
+font-size:15px;
+line-height:1.45;
+color:#222;
+margin:6px 0 2px;
+}
+
+.btn-keep{
+background:#ececec;
+color:#333;
+}
+
+.btn-keep:hover{
+background:#dfdfdf;
+}
+
 .menu-modal-content .field-note{
 font-size:12px;
 color:#8a8a8a;
@@ -2091,6 +2113,19 @@ Bill No: <span id="billNoDisplay" class="bill-no-display" aria-hidden="false">0<
 </div>
 </div>
 
+<!-- Print Clear Confirmation Modal -->
+<div class="modal" id="printClearModal">
+<div class="modal-content print-clear-modal-content">
+<div class="modal-header">
+<h2>Bill Printed</h2>
+</div>
+<p class="print-clear-message">Click OK to clear previous items and reset the bill panel for the next order.</p>
+<div class="modal-actions">
+<button type="button" class="btn-add" id="printClearOkBtn" onclick="handlePrintClearDecision(true)">OK</button>
+</div>
+</div>
+</div>
+
 <script>
 // --- Settings Dropdown Logic ---
 const settingsBtn = document.getElementById('settingsBtn');
@@ -2925,6 +2960,25 @@ function printUsingIsolatedFrame(onDone){
   }, 200);
 }
 
+function promptClearPrintedBill(){
+  const modal = document.getElementById('printClearModal');
+  if(!modal){
+    return;
+  }
+  modal.classList.add('active');
+  const okBtn = document.getElementById('printClearOkBtn');
+  if(okBtn) okBtn.focus();
+}
+
+function handlePrintClearDecision(shouldClear){
+  const modal = document.getElementById('printClearModal');
+  if(modal) modal.classList.remove('active');
+
+  if(!shouldClear) return;
+  resetBillPanelDefaults();
+  showIndexPopup('Bill cleared for next order', 'gold');
+}
+
 function printReceipt(){
 // Prevent multiple rapid print calls (solves mobile second-print issue)
 if(isPrinting){
@@ -3011,18 +3065,12 @@ body: JSON.stringify(billData)
   if(data.success) {
     // Bill saved successfully, proceed with printing
     // NOW proceed with printing after bill is saved
-    const shouldAutoResetAfterPrint = !isMobileLikeDevice() && navigator.maxTouchPoints === 0;
     let didFinalizePrint = false;
     function finalizePrintSuccess(){
       if(didFinalizePrint) return;
       didFinalizePrint = true;
       isPrinting = false;
-      if(shouldAutoResetAfterPrint){
-        resetBillPanelDefaults();
-        showIndexPopup('Bill Printed', 'gold');
-      } else {
-        showIndexPopup('Print opened. Clear bill manually after printing.', 'gold');
-      }
+      promptClearPrintedBill();
     }
 
     function cleanupAfterPrint(){
@@ -3291,6 +3339,12 @@ closeDeleteCategoryModal();
 document.getElementById("deleteMenuModal").addEventListener("click", function(e){
 if(e.target === this){
 closeDeleteMenuModal();
+}
+});
+
+document.getElementById("printClearModal").addEventListener("click", function(e){
+if(e.target === this){
+  return;
 }
 });
 
