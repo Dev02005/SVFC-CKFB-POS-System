@@ -2861,8 +2861,68 @@ let isPrinting = false;
 function isMobileLikeDevice(){
   const ua = navigator.userAgent || '';
   const mobileUa = /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(ua);
-  const compactTouchScreen = window.matchMedia('(max-width: 900px)').matches && navigator.maxTouchPoints > 0;
+  const touchDevice = navigator.maxTouchPoints > 0;
+  const compactTouchScreen = window.matchMedia('(max-width: 1100px)').matches && touchDevice;
   return mobileUa || compactTouchScreen;
+}
+
+function printUsingIsolatedFrame(onDone){
+  const billEl = document.querySelector('.bill');
+  if(!billEl){
+    window.print();
+    if(typeof onDone === 'function') onDone();
+    return;
+  }
+
+  const receiptEl = document.getElementById('customerReceipt');
+  const styleTag = document.querySelector('style');
+  const styleContent = styleTag ? styleTag.textContent : '';
+
+  const frame = document.createElement('iframe');
+  frame.style.position = 'fixed';
+  frame.style.right = '0';
+  frame.style.bottom = '0';
+  frame.style.width = '0';
+  frame.style.height = '0';
+  frame.style.border = '0';
+  frame.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(frame);
+
+  const frameDoc = frame.contentWindow && frame.contentWindow.document;
+  if(!frameDoc){
+    frame.remove();
+    window.print();
+    if(typeof onDone === 'function') onDone();
+    return;
+  }
+
+  frameDoc.open();
+  frameDoc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SVFC Print</title><style>${styleContent}</style></head><body>${billEl.outerHTML}${receiptEl ? receiptEl.outerHTML : ''}</body></html>`);
+  frameDoc.close();
+
+  let finished = false;
+  const finish = () => {
+    if(finished) return;
+    finished = true;
+    setTimeout(() => frame.remove(), 350);
+    if(typeof onDone === 'function') onDone();
+  };
+
+  setTimeout(() => {
+    try {
+      const win = frame.contentWindow;
+      if(!win){
+        finish();
+        return;
+      }
+      win.onafterprint = finish;
+      win.focus();
+      win.print();
+      setTimeout(finish, 9000);
+    } catch (error) {
+      finish();
+    }
+  }, 200);
 }
 
 function printReceipt(){
@@ -2951,7 +3011,7 @@ body: JSON.stringify(billData)
   if(data.success) {
     // Bill saved successfully, proceed with printing
     // NOW proceed with printing after bill is saved
-    const shouldAutoResetAfterPrint = !isMobileLikeDevice();
+    const shouldAutoResetAfterPrint = !isMobileLikeDevice() && navigator.maxTouchPoints === 0;
     let didFinalizePrint = false;
     function finalizePrintSuccess(){
       if(didFinalizePrint) return;
@@ -2969,14 +3029,18 @@ body: JSON.stringify(billData)
       window.removeEventListener('afterprint', cleanupAfterPrint);
       finalizePrintSuccess();
     }
-    
-    window.addEventListener('afterprint', cleanupAfterPrint);
-    window.print();
-    
-    // Safety timeout: release print lock after 8 seconds if afterprint event doesn't fire
-    setTimeout(()=>{
-      if(isPrinting) finalizePrintSuccess();
-    }, 8000);
+
+    if(isMobileLikeDevice()){
+      printUsingIsolatedFrame(finalizePrintSuccess);
+    } else {
+      window.addEventListener('afterprint', cleanupAfterPrint);
+      window.print();
+
+      // Safety timeout: release print lock after 8 seconds if afterprint event doesn't fire
+      setTimeout(()=>{
+        if(isPrinting) finalizePrintSuccess();
+      }, 8000);
+    }
     
   } else {
     alert('Error saving bill: ' + (data.error || 'Unknown error'));
