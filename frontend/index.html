@@ -2484,6 +2484,56 @@ let isLoadingBillNo = false;
 let lastBillDate = localStorage.getItem('lastBillDate');
 let customCategories = [];
 let customItemIndex = [];
+const DRAFT_BILL_KEY = 'svfcDraftBill';
+
+function saveDraftBillState(){
+  try {
+    const paymentMethod = document.getElementById('paymentMethod');
+    const orderType = document.getElementById('orderType');
+    const payload = {
+      cart,
+      billNumber,
+      payment: paymentMethod ? paymentMethod.value : '',
+      orderType: orderType ? orderType.value : '',
+      updatedAt: Date.now()
+    };
+    sessionStorage.setItem(DRAFT_BILL_KEY, JSON.stringify(payload));
+  } catch (error) {
+  }
+}
+
+function clearDraftBillState(){
+  try {
+    sessionStorage.removeItem(DRAFT_BILL_KEY);
+  } catch (error) {
+  }
+}
+
+function restoreDraftBillState(){
+  try {
+    const raw = sessionStorage.getItem(DRAFT_BILL_KEY);
+    if(!raw) return;
+
+    const saved = JSON.parse(raw);
+    if(!saved || typeof saved !== 'object') return;
+
+    if(saved.cart && typeof saved.cart === 'object'){
+      cart = saved.cart;
+    }
+
+    if(saved.billNumber && Number.isFinite(Number(saved.billNumber))){
+      billNumber = Number(saved.billNumber);
+      localStorage.setItem('billNumber', billNumber);
+      updateBillToken();
+    }
+
+    const paymentMethod = document.getElementById('paymentMethod');
+    const orderType = document.getElementById('orderType');
+    if(paymentMethod && saved.payment) paymentMethod.value = saved.payment;
+    if(orderType && saved.orderType) orderType.value = saved.orderType;
+  } catch (error) {
+  }
+}
 
 /* CHECK IF DATE HAS CHANGED FOR 24-HOUR RESET */
 function checkDateChangeAndReset() {
@@ -2567,7 +2617,18 @@ async function startNewBill() {
 /* MANUAL INPUT LISTENER */
 document.addEventListener('DOMContentLoaded', function(){
   loadNumbers();
+  restoreDraftBillState();
+  render();
 });
+
+const paymentMethodEl = document.getElementById('paymentMethod');
+const orderTypeEl = document.getElementById('orderType');
+if(paymentMethodEl){
+  paymentMethodEl.addEventListener('change', saveDraftBillState);
+}
+if(orderTypeEl){
+  orderTypeEl.addEventListener('change', saveDraftBillState);
+}
 
 /* DATE TIME */
 function updateDateTime(){
@@ -2687,6 +2748,7 @@ customerItems.appendChild(itemDiv);
 document.getElementById("total").innerText=total;
 // update action buttons state
 updateActionButtons();
+saveDraftBillState();
 }
 
 function updateActionButtons(){
@@ -2767,6 +2829,7 @@ async function clearBill(){
   if(Object.keys(cart).length > 0){
     cart={};
     render();
+    clearDraftBillState();
     showIndexPopup('Items Cleared', 'danger');
   }
 }
@@ -2774,11 +2837,13 @@ async function clearBill(){
 function resetBillPanelDefaults(){
   cart = {};
   render();
+  clearDraftBillState();
 
   const paymentMethod = document.getElementById('paymentMethod');
   const orderType = document.getElementById('orderType');
   if (paymentMethod) paymentMethod.selectedIndex = 0;
   if (orderType) orderType.selectedIndex = 0;
+  saveDraftBillState();
 }
 
 // Print lock to prevent rapid double-printing on mobile
