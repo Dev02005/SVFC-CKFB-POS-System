@@ -2892,8 +2892,6 @@ function resetBillPanelDefaults(){
 
 // Print lock to prevent rapid double-printing on mobile
 let isPrinting = false;
-// Set to true to skip browser/system print dialog on mobile only.
-const MOBILE_SILENT_PRINT_MODE = true;
 
 function isMobileLikeDevice(){
   const ua = navigator.userAgent || '';
@@ -3081,12 +3079,7 @@ body: JSON.stringify(billData)
     }
 
     if(isMobileLikeDevice()){
-      if(MOBILE_SILENT_PRINT_MODE){
-        showIndexPopup('Bill saved (print dialog disabled)', 'gold');
-        finalizePrintSuccess();
-      } else {
-        printUsingIsolatedFrame(finalizePrintSuccess);
-      }
+      printUsingIsolatedFrame(finalizePrintSuccess);
     } else {
       window.addEventListener('afterprint', cleanupAfterPrint);
       window.print();
