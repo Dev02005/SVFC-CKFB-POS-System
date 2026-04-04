@@ -6,6 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>SVFC-CK/FB Analytics Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <style>
     :root {
       --bg: #0a0a0a;
@@ -2714,13 +2715,95 @@ function buildSpreadsheetXmlFromCsvText(csvText, sheetTitle) {
 }
 
 function downloadAsXls(csvText, fileNameBase, sheetTitle) {
-  const bom = '\ufeff';
-  const blob = new Blob([bom + csvText], { type: 'text/csv;charset=utf-8;' });
+  if (typeof XLSX === 'undefined') {
+    const bom = '\ufeff';
+    const fallbackBlob = new Blob([bom + csvText], { type: 'text/csv;charset=utf-8;' });
+    const fallbackLink = document.createElement('a');
+    const fallbackUrl = URL.createObjectURL(fallbackBlob);
+    fallbackLink.setAttribute('href', fallbackUrl);
+    fallbackLink.setAttribute('download', `${fileNameBase}.csv`);
+    fallbackLink.style.visibility = 'hidden';
+    document.body.appendChild(fallbackLink);
+    fallbackLink.click();
+    document.body.removeChild(fallbackLink);
+    URL.revokeObjectURL(fallbackUrl);
+    return;
+  }
+
+  const rows = [];
+  let currentRow = [];
+  let currentCell = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < csvText.length; i++) {
+    const ch = csvText[i];
+    const next = csvText[i + 1];
+
+    if (ch === '"') {
+      if (inQuotes && next === '"') {
+        currentCell += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (ch === ',' && !inQuotes) {
+      currentRow.push(currentCell);
+      currentCell = '';
+      continue;
+    }
+
+    if ((ch === '\n' || ch === '\r') && !inQuotes) {
+      if (ch === '\r' && next === '\n') i++;
+      currentRow.push(currentCell);
+      if (currentRow.some(cell => String(cell).trim() !== '')) {
+        rows.push(currentRow);
+      }
+      currentRow = [];
+      currentCell = '';
+      continue;
+    }
+
+    currentCell += ch;
+  }
+
+  if (currentCell.length || currentRow.length) {
+    currentRow.push(currentCell);
+    if (currentRow.some(cell => String(cell).trim() !== '')) {
+      rows.push(currentRow);
+    }
+  }
+
+  const worksheet = XLSX.utils.aoa_to_sheet(rows);
+
+  // Auto-size columns to prevent compressed/shrunk cells in Excel/Sheets.
+  if (rows.length > 0) {
+    const colCount = rows.reduce((max, row) => Math.max(max, row.length), 0);
+    worksheet['!cols'] = Array.from({ length: colCount }, (_, colIndex) => {
+      let maxLen = 0;
+      for (let r = 0; r < rows.length; r++) {
+        const value = rows[r][colIndex] == null ? '' : String(rows[r][colIndex]);
+        maxLen = Math.max(maxLen, value.length);
+      }
+      const width = Math.max(12, Math.min(48, maxLen + 2));
+      return { wch: width };
+    });
+  }
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, (sheetTitle || 'Report').slice(0, 31));
+
+  const xlsxArray = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([xlsxArray], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  });
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
 
   link.setAttribute('href', url);
-  link.setAttribute('download', `${fileNameBase}.csv`);
+  link.setAttribute('download', `${fileNameBase}.xlsx`);
   link.style.visibility = 'hidden';
 
   document.body.appendChild(link);
