@@ -2784,6 +2784,13 @@ function resetBillPanelDefaults(){
 // Print lock to prevent rapid double-printing on mobile
 let isPrinting = false;
 
+function isMobileLikeDevice(){
+  const ua = navigator.userAgent || '';
+  const mobileUa = /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(ua);
+  const compactTouchScreen = window.matchMedia('(max-width: 900px)').matches && navigator.maxTouchPoints > 0;
+  return mobileUa || compactTouchScreen;
+}
+
 function printReceipt(){
 // Prevent multiple rapid print calls (solves mobile second-print issue)
 if(isPrinting){
@@ -2868,13 +2875,18 @@ body: JSON.stringify(billData)
   if(data.success) {
     // Bill saved successfully, proceed with printing
     // NOW proceed with printing after bill is saved
+    const shouldAutoResetAfterPrint = !isMobileLikeDevice();
     let didFinalizePrint = false;
     function finalizePrintSuccess(){
       if(didFinalizePrint) return;
       didFinalizePrint = true;
       isPrinting = false;
-      resetBillPanelDefaults();
-      showIndexPopup('Bill Printed', 'gold');
+      if(shouldAutoResetAfterPrint){
+        resetBillPanelDefaults();
+        showIndexPopup('Bill Printed', 'gold');
+      } else {
+        showIndexPopup('Print opened. Clear bill manually after printing.', 'gold');
+      }
     }
 
     function cleanupAfterPrint(){
