@@ -2484,7 +2484,7 @@ let isLoadingBillNo = false;
 let lastBillDate = localStorage.getItem('lastBillDate');
 let customCategories = [];
 let customItemIndex = [];
-const DRAFT_BILL_KEY = 'svfcDraftBill';
+const DRAFT_BILL_KEY = 'svfcDraftBill_v2';
 
 function saveDraftBillState(){
   try {
@@ -2497,21 +2497,21 @@ function saveDraftBillState(){
       orderType: orderType ? orderType.value : '',
       updatedAt: Date.now()
     };
-    sessionStorage.setItem(DRAFT_BILL_KEY, JSON.stringify(payload));
+    localStorage.setItem(DRAFT_BILL_KEY, JSON.stringify(payload));
   } catch (error) {
   }
 }
 
 function clearDraftBillState(){
   try {
-    sessionStorage.removeItem(DRAFT_BILL_KEY);
+    localStorage.removeItem(DRAFT_BILL_KEY);
   } catch (error) {
   }
 }
 
 function restoreDraftBillState(){
   try {
-    const raw = sessionStorage.getItem(DRAFT_BILL_KEY);
+    const raw = localStorage.getItem(DRAFT_BILL_KEY);
     if(!raw) return;
 
     const saved = JSON.parse(raw);
@@ -2619,6 +2619,15 @@ document.addEventListener('DOMContentLoaded', function(){
   loadNumbers();
   restoreDraftBillState();
   render();
+});
+
+window.addEventListener('pageshow', function(){
+  restoreDraftBillState();
+  render();
+});
+
+window.addEventListener('beforeunload', function(){
+  saveDraftBillState();
 });
 
 const paymentMethodEl = document.getElementById('paymentMethod');
@@ -2861,6 +2870,8 @@ function printReceipt(){
 if(isPrinting){
   return;
 }
+
+saveDraftBillState();
 
 async function proceedWithPrint(){
 // require positive total to avoid printing zero receipts
