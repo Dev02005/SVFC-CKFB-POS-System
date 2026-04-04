@@ -2714,13 +2714,13 @@ function buildSpreadsheetXmlFromCsvText(csvText, sheetTitle) {
 }
 
 function downloadAsXls(csvText, fileNameBase, sheetTitle) {
-  const xlsXml = buildSpreadsheetXmlFromCsvText(csvText, sheetTitle);
-  const blob = new Blob([xlsXml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+  const bom = '\ufeff';
+  const blob = new Blob([bom + csvText], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
 
   link.setAttribute('href', url);
-  link.setAttribute('download', `${fileNameBase}.xls`);
+  link.setAttribute('download', `${fileNameBase}.csv`);
   link.style.visibility = 'hidden';
 
   document.body.appendChild(link);
