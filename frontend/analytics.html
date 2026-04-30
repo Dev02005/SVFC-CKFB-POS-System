@@ -1516,8 +1516,13 @@
     </div>
 
     <script>
-        // Connect to Render backend
-        const apiUrl = (path) => window.location.origin + path;
+        // Use local backend when running on localhost/127.0.0.1; otherwise fall back to Render.
+        const apiUrl = (path) => {
+            const origin = window.location.origin || '';
+            const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
+            const base = isLocal ? origin : 'https://svfc-ckfb-pos-system.onrender.com';
+            return base + path;
+        };
         let chartInstances = {};
         let reportData = {
             items: [],
