@@ -2057,7 +2057,10 @@
       .add-permanent-btn,
       .modal,
       .bill-no-input,
-      .page-footer {
+      .page-footer,
+      aside,
+      #serverWakeNotice,
+      #indexPopup {
         display: none !important;
       }
 
@@ -2138,9 +2141,14 @@
         display: block !important;
       }
 
+      html, body {
+        height: auto !important;
+        overflow: hidden !important;
+      }
+
       /* Slip 1: Kitchen/Bill – prints first */
       .bill {
-        page-break-after: auto !important;
+        page-break-after: avoid !important;
         page-break-inside: avoid !important;
         font-size: 10px !important;
         border-top: 1px dashed #000 !important;
@@ -2150,6 +2158,7 @@
         content: "";
         display: block;
         height: 0;
+        page-break-after: avoid !important;
       }
 
       /* Tighten payment fields for print */
