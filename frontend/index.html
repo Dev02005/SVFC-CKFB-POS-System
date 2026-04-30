@@ -4009,11 +4009,16 @@
       }
     }
 
-    // Route API calls: localhost → same origin, everything else (Netlify, phone, etc.) → local server IP
+    // Route API calls:
+    //  - localhost / 127.0.0.1 / LAN IP  → use same origin (served by Flask directly)
+    //  - Netlify or any other origin       → use LAN IP (must be on same WiFi)
+    const LOCAL_SERVER = 'http://10.10.7.238:5000';
     const apiUrl = (path) => {
       const origin = window.location.origin || '';
-      const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
-      const base = isLocal ? origin : 'http://10.10.7.238:5000';
+      const isFlaskServed = origin.includes('localhost') ||
+                            origin.includes('127.0.0.1') ||
+                            origin.includes('10.10.7.238');
+      const base = isFlaskServed ? origin : LOCAL_SERVER;
       return base + path;
     };
 
