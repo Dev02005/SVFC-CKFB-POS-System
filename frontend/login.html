@@ -442,7 +442,7 @@
     const apiUrl = (path) => {
       const origin = window.location.origin || '';
       const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
-      const base = isLocal ? origin : 'https://svfc-ckfb-pos-system.onrender.com';
+      const base = isLocal ? origin : 'http://10.10.7.238:5000';
       return base + path;
     };
     const loginForm = document.getElementById('loginForm');
