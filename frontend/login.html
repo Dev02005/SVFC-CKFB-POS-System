@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,7 +23,8 @@
       box-sizing: border-box;
     }
 
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       min-height: 100vh;
@@ -232,6 +234,7 @@
         opacity: 0;
         transform: translateY(-10px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
@@ -382,6 +385,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="page-shell">
     <header class="header">
@@ -396,35 +400,35 @@
 
         </div>
 
-      <div class="error-message" id="errorMessage"></div>
-      <div class="success-message" id="successMessage"></div>
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
 
-      <form id="loginForm">
-        <div class="form-group">
-          <label for="email">Account</label>
-          <select id="email" name="email" required>
-            <option value="">Select account</option>
-            <option value="admin@svfc.com">Admin</option>
-            <option value="casher1@svfc.com">Casher 1</option>
-            <option value="casher2@svfc.com">Casher 2</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="password">Password</label>
-          <div class="password-field">
-            <input type="password" id="password" name="password" placeholder="Enter your password" required>
-            <button type="button" class="toggle-password" id="togglePassword" aria-label="Show password">
-              Show
-            </button>
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="email">Account</label>
+            <select id="email" name="email" required>
+              <option value="">Select account</option>
+              <option value="admin@svfc.com">Admin</option>
+              <option value="casher1@svfc.com">Casher 1</option>
+              <option value="casher2@svfc.com">Casher 2</option>
+            </select>
           </div>
-        </div>
 
-        <button type="submit" class="login-btn" id="loginBtn">
-          Login
-          <span class="loading-spinner" id="spinner"></span>
-        </button>
-      </form>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="password-field">
+              <input type="password" id="password" name="password" placeholder="Enter your password" required>
+              <button type="button" class="toggle-password" id="togglePassword" aria-label="Show password">
+                Show
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="login-btn" id="loginBtn">
+            Login
+            <span class="loading-spinner" id="spinner"></span>
+          </button>
+        </form>
 
       </div>
     </div>
@@ -435,8 +439,12 @@
   </div>
 
   <script>
-    // Connect to Render backend
-    const apiUrl = (path) => 'https://svfc-ckfb-pos-system.onrender.com' + path;
+    const apiUrl = (path) => {
+      const origin = window.location.origin || '';
+      const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
+      const base = isLocal ? origin : 'https://svfc-ckfb-pos-system.onrender.com';
+      return base + path;
+    };
     const loginForm = document.getElementById('loginForm');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
@@ -463,8 +471,6 @@
       successMessage.classList.remove('show');
     }
 
-    emailInput.addEventListener('change', hideMessages);
-
     togglePassword.addEventListener('click', () => {
       const isHidden = passwordInput.type === 'password';
       passwordInput.type = isHidden ? 'text' : 'password';
@@ -474,7 +480,7 @@
 
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      
+
       const email = emailInput.value.trim();
       const password = passwordInput.value;
 
@@ -505,7 +511,7 @@
           localStorage.setItem('authToken', data.token);
           localStorage.setItem('token', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
-          window.location.replace('index.html');
+          setTimeout(() => window.location.replace('index.html'), 900);
         } else {
           showError(data.error || 'Login failed');
           loginBtn.disabled = false;
@@ -525,4 +531,5 @@
     passwordInput.addEventListener('focus', hideMessages);
   </script>
 </body>
+
 </html>
