@@ -439,13 +439,10 @@
   </div>
 
   <script>
-    const LOCAL_SERVER = 'http://10.10.7.238:5000';
     const apiUrl = (path) => {
       const origin = window.location.origin || '';
-      const isFlaskServed = origin.includes('localhost') ||
-                            origin.includes('127.0.0.1') ||
-                            origin.includes('10.10.7.238');
-      const base = isFlaskServed ? origin : LOCAL_SERVER;
+      const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
+      const base = isLocal ? origin : 'https://svfc-ckfb-pos-system.onrender.com';
       return base + path;
     };
     const loginForm = document.getElementById('loginForm');
