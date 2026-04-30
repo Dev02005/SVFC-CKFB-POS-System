@@ -4009,46 +4009,13 @@
       }
     }
 
-    // Use local backend when running on localhost/127.0.0.1; otherwise fall back to Render.
+    // Route API calls: localhost → same origin, everything else (Netlify, phone, etc.) → local server IP
     const apiUrl = (path) => {
       const origin = window.location.origin || '';
       const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
-      const base = isLocal ? origin : 'https://svfc-ckfb-pos-system.onrender.com';
+      const base = isLocal ? origin : 'http://10.10.7.238:5000';
       return base + path;
     };
-
-    const defaultMenuData = {
-      "Biryanis": [
-        ["Dum Biryani (1 Pc)", 100, ""],
-        ["Single piece biryani", 120, ""]
-      ],
-      "Fast Food": [
-        ["Veg Burger", 80, ""],
-        ["French Fries", 60, ""]
-      ],
-      "Ice creams": [
-        ["Vanilla Scoop", 50, ""],
-        ["Chocolate Scoop", 55, ""]
-      ],
-      "Juice Bar": [
-        ["Orange Juice", 70, ""],
-        ["Mixed Fruit Juice", 90, ""]
-      ],
-      "Meals": [
-        ["Veg Meal", 150, ""],
-        ["Chicken Meal", 180, ""]
-      ],
-      "Starters": [
-        ["Paneer Tikka", 120, ""],
-        ["Gobi 65", 110, ""]
-      ],
-      "Tiffins": [
-        ["Idly", 40, ""],
-        ["Dosa", 60, ""]
-      ]
-    };
-
-    const data = { ...defaultMenuData };
 
     // ===== AUTHENTICATION CHECK =====
     function checkAuthentication() {
@@ -4181,6 +4148,7 @@
     });
 
     /* ===== MENU DATA (DYNAMIC FROM BACKEND) ===== */
+    const data = {};
     /* ===== ELEMENTS ===== */
     const tabsDiv = document.getElementById("tabs");
     const menuDiv = document.getElementById("menu");
