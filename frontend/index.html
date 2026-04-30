@@ -4009,18 +4009,36 @@
       }
     }
 
-    // Route API calls:
-    //  - localhost / 127.0.0.1 / LAN IP  → use same origin (served by Flask directly)
-    //  - Netlify or any other origin       → use LAN IP (must be on same WiFi)
-    const LOCAL_SERVER = 'http://10.10.7.238:5000';
+    // Route API calls: localhost → local Flask, everything else → Render backend
     const apiUrl = (path) => {
       const origin = window.location.origin || '';
-      const isFlaskServed = origin.includes('localhost') ||
-                            origin.includes('127.0.0.1') ||
-                            origin.includes('10.10.7.238');
-      const base = isFlaskServed ? origin : LOCAL_SERVER;
+      const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
+      const base = isLocal ? origin : 'https://svfc-ckfb-pos-system.onrender.com';
       return base + path;
     };
+
+    // Show/hide a server wake-up notice (Render free tier cold starts)
+    function showServerWakeNotice(show) {
+      let notice = document.getElementById('serverWakeNotice');
+      if (!notice) {
+        notice = document.createElement('div');
+        notice.id = 'serverWakeNotice';
+        notice.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);' +
+          'background:rgba(30,30,30,0.96);border:2px solid #ffb300;color:#ffd54f;' +
+          'padding:12px 22px;border-radius:10px;font-size:14px;font-weight:600;' +
+          'z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.6);text-align:center;' +
+          'pointer-events:none;transition:opacity 0.4s;';
+        document.body.appendChild(notice);
+      }
+      if (show) {
+        notice.innerHTML = '&#9203; Waking up server, please wait...';
+        notice.style.opacity = '1';
+        notice.style.display = 'block';
+      } else {
+        notice.style.opacity = '0';
+        setTimeout(function() { if (notice) notice.style.display = 'none'; }, 400);
+      }
+    }
 
     // ===== AUTHENTICATION CHECK =====
     function checkAuthentication() {
@@ -4835,8 +4853,10 @@
       }
     }
 
-    // Load custom menu items from database
-    async function loadCustomMenuItems() {
+    // Load custom menu items from database (with retry for Render cold-start)
+    async function loadCustomMenuItems(retryCount = 0) {
+      const MAX_RETRIES = 4;
+      const RETRY_DELAY_MS = 6000;
       try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('token');
         const response = await fetch(apiUrl('/api/custom-items'), {
@@ -4846,6 +4866,8 @@
         });
 
         const result = await response.json();
+
+        showServerWakeNotice(false); // hide notice on success
 
         if (result.success && result.items && result.items.length > 0) {
           customItemIndex = result.items.map((item) => (
@@ -4891,8 +4913,17 @@
           renderEditMenuCategoryTabs();
         }
       } catch (error) {
+        // Render free-tier cold start: retry with delay and show notice
+        if (retryCount < MAX_RETRIES) {
+          showServerWakeNotice(true);
+          setTimeout(() => loadCustomMenuItems(retryCount + 1), RETRY_DELAY_MS);
+        } else {
+          showServerWakeNotice(false);
+          showIndexPopup('Could not load menu items. Please refresh the page.', 'danger');
+        }
       }
     }
+
 
     async function loadCustomCategories() {
       try {
@@ -4933,6 +4964,10 @@
           populatePermanentCategoryOptions();
         }
       } catch (error) {
+        // Retry silently on network failure (Render cold start)
+        if ((arguments[0] || 0) < 4) {
+          setTimeout(() => loadCustomCategories((arguments[0] || 0) + 1), 6000);
+        }
       }
     }
 
