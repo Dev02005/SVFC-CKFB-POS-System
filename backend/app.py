@@ -6,7 +6,7 @@ Flask API for handling billing, analytics, and inventory management
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from pymongo import MongoClient
+from pymongo import MongoClient, ReturnDocument
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
@@ -15,6 +15,8 @@ import logging
 import bcrypt
 import re
 from uuid import uuid4
+import threading
+import time
 
 # Configure logging FIRST (before MongoDB)
 logging.basicConfig(
@@ -32,11 +34,11 @@ def business_now():
     return datetime.now(BUSINESS_TZ)
 
 
-def build_bill_identifier_query(token_value):
-    """Match bills stored with either legacy billNo or token, as int or string."""
+def build_bill_identifier_query(token_value, created_at_iso=None):
+    """Match bills stored with either legacy billNo/token and optionally the exact bill timestamp."""
     token_str = str(token_value).strip()
     token_int = int(token_str)
-    return {
+    query = {
         "$or": [
             {"token": token_int},
             {"token": token_str},
@@ -44,6 +46,11 @@ def build_bill_identifier_query(token_value):
             {"billNo": token_str},
         ]
     }
+
+    if created_at_iso:
+        query["$and"] = [{"createdAtISO": created_at_iso}]
+
+    return query
 
 # Load environment variables FIRST
 load_dotenv()
@@ -218,6 +225,17 @@ def check_and_cleanup():
     except Exception as e:
         logger.warning(f"Could not perform automatic cleanup check: {str(e)}")
 
+
+def daily_cleanup_scheduler():
+    """Background thread: runs the 6-month bill cleanup every 24 hours."""
+    while True:
+        time.sleep(24 * 60 * 60)  # wait 24 hours
+        logger.info("⏰ Scheduled daily cleanup starting...")
+        try:
+            cleanup_old_bills()
+        except Exception as e:
+            logger.error(f"Scheduled cleanup error: {str(e)}")
+
 # App setup
 app = Flask(__name__, static_folder=".", static_url_path="")
 app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
@@ -310,8 +328,6 @@ def serve_login():
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         frontend_path = os.path.join(base_dir, "frontend")
         file_path = os.path.join(frontend_path, "login.html")
-        logger.info(f"Attempting to serve login.html from: {file_path}")
-        logger.info(f"File exists: {os.path.exists(file_path)}")
         return send_from_directory(frontend_path, "login.html")
     except Exception as e:
         logger.error(f"Error serving login.html: {str(e)}")
@@ -396,7 +412,7 @@ def verify_token():
         return jsonify({"success": False, "error": "Invalid token"}), 401
 
 def check_and_reset_daily_counter():
-    """Reset counter to 1 when calendar day changes at 12:00 AM (business timezone)."""
+    """Reset the next bill number to 1 when calendar day changes at 12:00 AM (business timezone)."""
     try:
         now_local = business_now()
 
@@ -407,10 +423,10 @@ def check_and_reset_daily_counter():
             # Initialize new counter
             counter_col.insert_one({
                 "_id": "token",
-                "value": 0,
+                "value": 1,
                 "lastReset": now_local
             })
-            return 0, False
+            return 1, False
 
         # Reset when date changes (midnight boundary in business timezone)
         last_reset = counter.get("lastReset", now_local)
@@ -427,11 +443,11 @@ def check_and_reset_daily_counter():
                 {"_id": "token"},
                 {"$set": {"value": 1, "lastReset": now_local}}
             )
-            logger.info("♻️ Midnight Bill Counter Reset - Bill #1 (12:00 AM day rollover)")
+            logger.info("♻️ Midnight Bill Counter Reset - Next Bill #1 (12:00 AM day rollover)")
             return 1, True
         
         # Return current value and reset status
-        return counter.get("value", 0), False
+        return counter.get("value", 1), False
         
     except Exception as e:
         logger.error(f"Error in counter reset check: {str(e)}")
@@ -452,11 +468,12 @@ def get_token():
                 "token": 1
             }), 200
         
-        # Increment counter and get new value from database
+        # Return the current bill number and advance the stored counter for the next bill
         token_doc = counter_col.find_one_and_update(
             {"_id": "token"},
             {"$inc": {"value": 1}},
-            return_document=True
+            return_document=ReturnDocument.BEFORE,
+            upsert=True
         )
         
         if not token_doc or "value" not in token_doc:
@@ -479,7 +496,7 @@ def get_token():
 
 @app.route("/api/token/current", methods=["GET"])
 def get_current_token():
-    """Fetch current bill token from database without incrementing"""
+    """Fetch the next bill token from database without incrementing"""
     try:
         # Check and reset if 24 hours have passed
         _, was_reset = check_and_reset_daily_counter()
@@ -491,16 +508,15 @@ def get_current_token():
                 "token": 1
             }), 200
         
-        # Fetch current value from database
+        # Fetch current value from database (this is the next bill number to use)
         token_doc = counter_col.find_one({"_id": "token"})
         
         if not token_doc:
-            token_doc = {"value": 0}
+            token_doc = {"value": 1}
         
-        current_bill_number = token_doc.get("value", 0)
-        next_bill_number = current_bill_number + 1
+        current_bill_number = token_doc.get("value", 1)
         
-        logger.debug(f"Current Bill: #{current_bill_number}, Next Bill will be: #{next_bill_number}")
+        logger.debug(f"Current Next Bill: #{current_bill_number}")
         
         return jsonify({
             "success": True,
@@ -536,14 +552,28 @@ def save_bill():
                 "error": error_msg
             }), 400
         
-        # Prepare bill document
+        # Generate/assign a unique bill token server-side and advance the stored next number
         now_utc = datetime.now(timezone.utc)
+        try:
+            # Ensure daily reset if required
+            check_and_reset_daily_counter()
+            token_doc = counter_col.find_one({"_id": "token"}) or {"value": 1}
+            bill_number = int(token_doc.get("value", 1))
+            counter_col.update_one(
+                {"_id": "token"},
+                {"$set": {"value": bill_number + 1, "lastReset": business_now()}},
+                upsert=True
+            )
+        except Exception:
+            # Fallback to safe value
+            bill_number = int(data.get("token", 0)) or 0
+
         bill = {
             "items": data.get("items", []),
             "total": float(data.get("total", 0)),
             "payment": data.get("payment", "Unknown").strip(),
             "orderType": data.get("orderType", "Unknown").strip(),
-            "token": int(data.get("token", 0)),
+            "token": int(bill_number),
             "uniqueBillNo": generate_unique_bill_no(now_utc),
             "createdAt": now_utc,
             "createdAtISO": now_utc.isoformat()
@@ -602,7 +632,7 @@ def get_bills():
         # Fetch and return bills (sort by token number descending to show latest bills first)
         bills = list(
             bills_col.find(filter_query, {"_id": 0})
-            .sort("token", -1)
+            .sort([("createdAt", -1), ("token", -1)])
             .limit(limit)
         )
         
@@ -632,6 +662,14 @@ def get_bill(token):
             {"token": int(token)},
             {"_id": 0}
         )
+
+        if bill:
+            # When bill numbers repeat after midnight reset, return the newest match.
+            bill = bills_col.find(
+                {"token": int(token)},
+                {"_id": 0}
+            ).sort("createdAt", -1).limit(1)
+            bill = next(bill, None)
         
         if not bill:
             return jsonify({
@@ -671,7 +709,9 @@ def delete_bill(token):
             return jsonify({"success": False, "error": "Admin access required"}), 403
         
         token_int = int(token)
-        bill_query = build_bill_identifier_query(token)
+        body = request.get_json(silent=True) or {}
+        created_at_iso = (body.get("createdAtISO") or request.args.get("createdAtISO") or request.args.get("createdAt") or "").strip()
+        bill_query = build_bill_identifier_query(token, created_at_iso or None)
         result = bills_col.update_one(
             bill_query,
             {"$set": {"deleted": True}}
@@ -717,7 +757,9 @@ def restore_bill(token):
             return jsonify({"success": False, "error": "Admin access required"}), 403
         
         token_int = int(token)
-        bill_query = build_bill_identifier_query(token)
+        body = request.get_json(silent=True) or {}
+        created_at_iso = (body.get("createdAtISO") or request.args.get("createdAtISO") or request.args.get("createdAt") or "").strip()
+        bill_query = build_bill_identifier_query(token, created_at_iso or None)
         result = bills_col.update_one(
             bill_query,
             {"$set": {"deleted": False}}
@@ -763,23 +805,9 @@ def permanent_delete_bill(token):
             return jsonify({"success": False, "error": "Admin access required"}), 403
         token_int = int(token)
         request_data = request.get_json(silent=True) or {}
-        created_at = str(request_data.get("createdAt") or "").strip()
+        created_at_iso = str(request_data.get("createdAtISO") or request.args.get("createdAtISO") or request.args.get("createdAt") or "").strip()
 
-        bill_query = build_bill_identifier_query(token)
-        if created_at:
-            # Use exact createdAt match to avoid deleting the wrong bill when token numbers repeat.
-            bill_query = {
-                "$and": [
-                    bill_query,
-                    {
-                        "$or": [
-                            {"createdAt": created_at},
-                            {"createdAtISO": created_at},
-                            {"date": created_at},
-                        ]
-                    },
-                ]
-            }
+        bill_query = build_bill_identifier_query(token, created_at_iso or None)
         result = bills_col.delete_one(bill_query)
         
         if result.deleted_count == 0:
@@ -809,96 +837,6 @@ def permanent_delete_bill(token):
         }), 500
 
 # ============ ANALYTICS ENDPOINTS ============
-
-@app.route("/api/sales", methods=["GET"])
-def daily_sales():
-    """Get sales summary for today"""
-    try:
-        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        
-        bills = list(bills_col.find(
-            {"createdAt": {"$gte": today}, "deleted": {"$ne": True}},
-            {"_id": 0}
-        ))
-        
-        total_sales = sum(b.get("total", 0) for b in bills)
-        
-        # Sales by payment method
-        payment_breakdown = {}
-        for bill in bills:
-            payment = bill.get("payment", "Unknown")
-            payment_breakdown[payment] = payment_breakdown.get(payment, 0) + bill.get("total", 0)
-        
-        # Sales by order type
-        order_type_breakdown = {}
-        for bill in bills:
-            order_type = bill.get("orderType", "Unknown")
-            order_type_breakdown[order_type] = order_type_breakdown.get(order_type, 0) + bill.get("total", 0)
-        
-        return jsonify({
-            "success": True,
-            "date": today.isoformat(),
-            "billCount": len(bills),
-            "totalSales": total_sales,
-            "averageBill": round(total_sales / len(bills), 2) if bills else 0,
-            "paymentBreakdown": payment_breakdown,
-            "orderTypeBreakdown": order_type_breakdown
-        }), 200
-    
-    except Exception as e:
-        logger.error(f"Error calculating sales: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": "Failed to calculate sales"
-        }), 500
-
-@app.route("/api/analytics/summary", methods=["GET"])
-def analytics_summary():
-    """Get comprehensive analytics summary"""
-    try:
-        # Today's date range
-        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        
-        # Fetch all bills (excluding soft-deleted)
-        all_bills = list(bills_col.find({"deleted": {"$ne": True}}, {"_id": 0}).sort("createdAt", -1))
-        
-        # Today's bills
-        today_bills = [b for b in all_bills if b.get("createdAt", datetime.now()).replace(hour=0, minute=0, second=0, microsecond=0) == today]
-        
-        # Last 7 days bills
-        seven_days_ago = today - timedelta(days=7)
-        week_bills = [b for b in all_bills if b.get("createdAt", datetime.now()) >= seven_days_ago]
-        
-        # Calculate totals
-        today_total = sum(b.get("total", 0) for b in today_bills)
-        week_total = sum(b.get("total", 0) for b in week_bills)
-        total_all_time = sum(b.get("total", 0) for b in all_bills)
-        
-        return jsonify({
-            "success": True,
-            "today": {
-                "billCount": len(today_bills),
-                "totalSales": today_total,
-                "averageBill": round(today_total / len(today_bills), 2) if today_bills else 0
-            },
-            "week": {
-                "billCount": len(week_bills),
-                "totalSales": week_total,
-                "averageBill": round(week_total / len(week_bills), 2) if week_bills else 0
-            },
-            "allTime": {
-                "billCount": len(all_bills),
-                "totalSales": total_all_time,
-                "averageBill": round(total_all_time / len(all_bills), 2) if all_bills else 0
-            }
-        }), 200
-    
-    except Exception as e:
-        logger.error(f"Error generating analytics summary: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": "Failed to generate analytics"
-        }), 500
 
 @app.route("/api/health", methods=["GET"])
 def health_check():
@@ -1020,6 +958,92 @@ def delete_custom_item(name):
         return jsonify({
             "success": False,
             "error": "Failed to delete custom item"
+        }), 500
+
+@app.route("/api/custom-items/<name>", methods=["PUT"])
+@jwt_required()
+def update_custom_item(name):
+    """Update a custom menu item (Admin only)"""
+    try:
+        current_user_id = get_jwt_identity()
+        user = users_col.find_one({"_id": ObjectId(current_user_id)})
+
+        if not user or user.get('role') != 'admin':
+            return jsonify({"success": False, "error": "Admin access required"}), 403
+
+        payload = request.get_json() or {}
+        old_name = (name or "").strip()
+        new_name = (payload.get("name") or "").strip()
+        category = (payload.get("category") or "Custom").strip()
+        image_url = (payload.get("imageUrl") or "").strip()
+
+        if not old_name:
+            return jsonify({"success": False, "error": "Item name is required"}), 400
+
+        if not new_name:
+            return jsonify({"success": False, "error": "New item name is required"}), 400
+
+        if payload.get("price") is None:
+            return jsonify({"success": False, "error": "Price is required"}), 400
+
+        try:
+            price = float(payload.get("price"))
+            if price <= 0:
+                raise ValueError()
+        except (TypeError, ValueError):
+            return jsonify({"success": False, "error": "Price must be a positive number"}), 400
+
+        source_query = {
+            "name": {
+                "$regex": f"^{re.escape(old_name)}$",
+                "$options": "i"
+            }
+        }
+        existing_item = custom_items_col.find_one(source_query)
+        if not existing_item:
+            return jsonify({"success": False, "error": "Item not found"}), 404
+
+        if existing_item.get("name", "").lower() != new_name.lower():
+            duplicate_query = {
+                "name": {
+                    "$regex": f"^{re.escape(new_name)}$",
+                    "$options": "i"
+                }
+            }
+            duplicate_item = custom_items_col.find_one(duplicate_query)
+            if duplicate_item:
+                return jsonify({"success": False, "error": "Another item with this name already exists"}), 400
+
+        custom_items_col.update_one(
+            {"_id": existing_item["_id"]},
+            {
+                "$set": {
+                    "name": new_name,
+                    "price": price,
+                    "category": category or "Custom",
+                    "imageUrl": image_url,
+                    "updatedAt": datetime.now(),
+                    "updatedBy": str(user.get("email", current_user_id))
+                }
+            }
+        )
+
+        logger.info(f"✅ Custom item updated: {existing_item.get('name')} -> {new_name}")
+        return jsonify({
+            "success": True,
+            "message": "Custom item updated successfully",
+            "item": {
+                "name": new_name,
+                "price": price,
+                "category": category or "Custom",
+                "imageUrl": image_url
+            }
+        }), 200
+    except Exception as e:
+        logger.error(f"Error updating custom item: {str(e)}")
+        return jsonify({
+            "success": False,
+            "error": "Failed to update custom item"
         }), 500
 
 @app.route("/api/custom-categories", methods=["GET"])
@@ -1148,8 +1172,13 @@ if __name__ == "__main__":
     logger.info("📊 Analytics available at http://localhost:{}/analytics.html".format(port))
     logger.info("💳 POS System available at http://localhost:{}/".format(port))
     
-    # Check and cleanup old bills on startup
+    # Run cleanup immediately on startup
     check_and_cleanup()
+
+    # Start background daily cleanup scheduler (runs every 24 hours)
+    cleanup_thread = threading.Thread(target=daily_cleanup_scheduler, daemon=True, name="DailyCleanup")
+    cleanup_thread.start()
+    logger.info("🔄 Daily cleanup scheduler started (runs every 24 hours)")
     
     app.run(
         debug=debug_mode,
@@ -1157,4 +1186,3 @@ if __name__ == "__main__":
         host="0.0.0.0",
         use_reloader=False
     )
-
